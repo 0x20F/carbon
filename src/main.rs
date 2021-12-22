@@ -9,7 +9,6 @@ mod file;
 
 use clap::{ Arg, App, SubCommand };
 use dotenv::dotenv;
-use std::env;
 
 
 

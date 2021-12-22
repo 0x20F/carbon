@@ -1,6 +1,6 @@
 use crate::docker;
 use crate::file;
-use std::env;
+use crate::util::environment;
 
 
 pub struct ServiceStart {}
@@ -8,7 +8,7 @@ pub struct ServiceStart {}
 impl ServiceStart {
     pub fn with_services<'a>(services: Vec<&'a str>) {
         // Handle error a bit more nicely
-        let environment = Self::get_root_directory();
+        let environment = environment::get_root_directory();
         let mut configs = vec![];
 
         for service in services {
@@ -32,11 +32,6 @@ impl ServiceStart {
 
 
     fn parse_service_file(contents: &str) -> String {
-        contents.replace("${ROOT}", &Self::get_root_directory())
-    }
-
-
-    fn get_root_directory() -> String {
-        env::var("PROJECTS_DIRECTORY").expect("Projects directory must be set in dotenv file")
+        contents.replace("${ROOT}", &environment::get_root_directory())
     }
 }

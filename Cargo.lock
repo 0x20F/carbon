@@ -34,6 +34,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "dotenv",
+ "paris",
 ]
 
 [[package]]
@@ -71,6 +72,12 @@ name = "libc"
 version = "0.2.112"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1b03d17f364a3a042d5e5d46b053bbbf82c92c9430c592dd4c064dc6ee997125"
+
+[[package]]
+name = "paris"
+version = "1.5.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a25b44bc50356452ab4fdcdd6d6b0f70eddc4f9fd16c9ba142f69e74fb195165"
 
 [[package]]
 name = "strsim"

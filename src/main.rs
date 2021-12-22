@@ -1,6 +1,8 @@
 extern crate clap;
 extern crate dotenv;
+extern crate rand;
 
+mod util;
 mod handlers;
 mod docker;
 mod file;

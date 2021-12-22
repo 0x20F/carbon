@@ -9,3 +9,4 @@ edition = "2021"
 clap = "2"
 dotenv = "0.15"
 paris = { version = "1.5", features = [ "macros" ] }
+rand = "0.8"

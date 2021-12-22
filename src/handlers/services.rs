@@ -19,7 +19,9 @@ impl ServiceStart {
 
         let compose = docker::build_compose_file(&configs);
         let cleaned = Self::parse_service_file(&compose);
-        let temp_path = file::write_tmp("docker_compose.yml", &cleaned);
+        let temp_path = file::write_tmp("yml", &cleaned);
+        // Log the path that was saved as well
+        println!("Saved compose file to: {}", temp_path);
 
         // Check if argument for viewing the file was passed
         // and print the file if it has

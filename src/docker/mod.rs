@@ -1,4 +1,5 @@
 use std::process::Command;
+use crate::error::{ Result, CarbonError };
 use std::str;
 
 
@@ -29,7 +30,7 @@ pub fn build_compose_file(services: &[String]) -> String {
 
 
 
-pub fn start_service_setup(configuration: &str) {
+pub fn start_service_setup(configuration: &str) -> Result<()> {
     let output = Command::new("docker")
                     .arg("compose")
                     .arg("--file")
@@ -39,14 +40,29 @@ pub fn start_service_setup(configuration: &str) {
                     .output()
                     .expect("Something went wrong when building the generated compose file");
 
-    let stdout = str::from_utf8(&output.stdout).unwrap();
-    let stderr = str::from_utf8(&output.stderr).unwrap();
-
-    if stderr == "" {
-        // Everything went OK (with the command execution, can't vouch for docker)
-        println!("{}", stdout);
-    } else {
-        // Something broke
-        println!("{}", stderr);
+    if !output.status.success() {
+        let stderr = str::from_utf8(&output.stderr).unwrap();
+        return Err(CarbonError::DockerServiceStartup(stderr.to_string()));
     }
+
+    Ok(())
+}
+
+
+pub fn stop_service_container(name: &str, configuration: &str) -> Result<()> {
+    let output = Command::new("docker")
+                    .arg("compose")
+                    .arg("--file")
+                    .arg(configuration)
+                    .arg("down")
+                    .arg(name)
+                    .output()
+                    .expect("Something went wrong when trying to stop a service in a running compose file");
+
+    if !output.status.success() {
+        let stderr = str::from_utf8(&output.stderr).unwrap();
+        return Err(CarbonError::DockerServiceShutdown(stderr.to_string()));
+    }
+
+    Ok(())
 }

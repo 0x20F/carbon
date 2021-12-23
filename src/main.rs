@@ -1,17 +1,19 @@
 extern crate clap;
 extern crate dotenv;
 extern crate rand;
+extern crate serde;
 #[macro_use] extern crate paris;
+
 
 mod util;
 mod handlers;
 mod docker;
 mod file;
 mod error;
+mod config;
 
 use clap::{ Arg, App, SubCommand, ArgMatches };
 use dotenv::dotenv;
-use paris::log;
 
 
 
@@ -51,16 +53,18 @@ fn main() {
 
 
 pub fn execute(matches: &ArgMatches) -> error::Result<()> {
+    let mut service_handler = handlers::Service::new();
+
     // Handle service start
     if let Some(matches) = matches.subcommand_matches("start") {
         let services: Vec<_> = matches.values_of("services").unwrap().collect();
-        handlers::Service::start(services)?;
+        service_handler.start(services)?;
     }
 
     // Handle service stop
     if let Some(matches) = matches.subcommand_matches("stop") {
         let services: Vec<_> = matches.values_of("services").unwrap().collect();
-        handlers::Service::stop(services)?;
+        service_handler.stop(services)?;
     }
 
 

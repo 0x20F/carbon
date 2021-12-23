@@ -80,6 +80,30 @@ pub fn show_all() {
 }
 
 
+pub fn connect(network: &str, containers: &[&str]) -> Result<()> {
+    info!("Connecting <cyan>[</>{}<cyan>]</> containers to network: <magenta>{}</>", containers.join(", "), network);
+
+    for container in containers.iter() {
+        let output = Command::new("docker")
+            .arg("network")
+            .arg("connect")
+            .arg(network)
+            .arg(container)
+            .output()
+            .expect("Something went wrong when connecting to the network");
+
+        // Print the error if it exists
+        if !output.status.success() {
+            let stderr = std::str::from_utf8(&output.stderr).unwrap();
+            return Err(CarbonError::DockerNetworkConnect(stderr.to_string()));
+        }
+    }
+
+    Ok(())
+}
+
+
+
 
 fn inspect(name: &str) -> String {
     let output = Command::new("docker")

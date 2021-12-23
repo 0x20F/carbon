@@ -7,6 +7,13 @@ use paris::Logger;
 use std::collections::HashMap;
 
 
+
+
+static SERVICE_FILE: &'static str = "carbon.yml";
+static COMPOSE_FILE_FORMAT: &'static str = "yml";
+
+
+
 pub struct Service<'p> {
     logger: Logger<'p>
 }
@@ -19,32 +26,28 @@ impl<'p> Service<'p> {
     }
 
 
-    pub fn start<'a>(&mut self, services: Vec<&'a str>) -> Result<()> {
-        // Handle error a bit more nicely
+    pub fn start<'a>(&mut self, services: Vec<&'a str>, display: bool) -> Result<()> {
         let environment = environment::get_root_directory()?;
         let mut carbon_conf = Config::get();
         let mut configs = vec![];
 
         for service in services.iter() {
-            // 1. Load config for each service and put it in a vector
-            let path = format!("{}/{}/carbon.yml", environment, service);
+            let path = format!("{}/{}/{}", environment, service, SERVICE_FILE);
             configs.push(file::get_contents(&path)?);
         }
 
         let compose = docker::build_compose_file(&configs);
         let cleaned = environment::parse_variables(&compose)?;
-        let temp_path = file::write_tmp("yml", &cleaned)?;
+        let temp_path = file::write_tmp(COMPOSE_FILE_FORMAT, &cleaned)?;
 
-        // Log the path that was saved as well
-        println!("Saved compose file to: {}", temp_path);
-
-        // Check if argument for viewing the file was passed
-        // and print the file if it has
-        println!("{}", cleaned);
-
-        carbon_conf.add_running_service(&temp_path, services);
+        
+        if display {
+            println!("Saved compose file to: {}", temp_path);
+            println!("{}", cleaned);
+        }
 
         docker::start_service_setup(&temp_path)?;
+        carbon_conf.add_running_service(&temp_path, services);
 
         // Only save to config if service startup succeeded!
         Config::save(&carbon_conf)?;
@@ -92,7 +95,7 @@ impl<'p> Service<'p> {
 
         // Update the running services within the config
         config.set_running_services(to_keep);
-        Config::save(&config);
+        Config::save(&config)?;
 
         Ok(())
     }

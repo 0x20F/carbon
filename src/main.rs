@@ -25,23 +25,28 @@ fn main() {
         .version("1.0")
         .author("0x20F")
         .about("Container build tool")
-        .subcommand(SubCommand::with_name("start")
-                        .about("Start one or multiple services")
-                        .version("1.0")
-                        .author("0x20F")
-                        .arg(Arg::with_name("services")
-                                .help("What service and/or services to start (all = *)")
+        .subcommand(SubCommand::with_name("service")
+                        .about("Manage services")
+                        .subcommand(SubCommand::with_name("start")
+                            .about("Start a service")
+                            .arg(Arg::with_name("services")
+                                .help("Services to start")
                                 .required(true)
-                                .min_values(1))
-                    )
-        .subcommand(SubCommand::with_name("stop")
-                        .about("Stop one or multiple services")
-                        .version("1.0")
-                        .author("0x20F")
-                        .arg(Arg::with_name("services")
-                                .help("What service and/or services to stop (all = *)")
+                                .multiple(true)
+                                .index(1))
+                            .arg(Arg::with_name("display")
+                                .short("d")
+                                .long("display")
+                                .help("Display the compose file"))
+                        )
+                        .subcommand(SubCommand::with_name("stop")
+                            .about("Stop a service")
+                            .arg(Arg::with_name("services")
+                                .help("Services to stop")
                                 .required(true)
-                                .min_values(1))
+                                .multiple(true)
+                                .index(1))
+                        )
                     )
         .subcommand(SubCommand::with_name("network")
                         .about("Perform actions on docker networks")
@@ -70,6 +75,20 @@ fn main() {
                                         .version("1.0")
                                         .author("0x20F")
                                     )
+                        .subcommand(SubCommand::with_name("connect")
+                                        .about("Connect a container to a network")
+                                        .version("1.0")
+                                        .author("0x20F")
+                                        .arg(Arg::with_name("network")
+                                                .help("The name of the network")
+                                                .required(true)
+                                                .index(1))
+                                        .arg(Arg::with_name("container")
+                                                .help("The name/names of all containers that should connect to the network")
+                                                .required(true)
+                                                .index(2)
+                                                .min_values(1))
+                                    )
                     )
         .get_matches();
     
@@ -82,18 +101,21 @@ fn main() {
 
 
 pub fn execute(matches: &ArgMatches) -> error::Result<()> {
-    let mut service_handler = handlers::Service::new();
-
-    // Handle service start
-    if let Some(matches) = matches.subcommand_matches("start") {
-        let services: Vec<_> = matches.values_of("services").unwrap().collect();
-        service_handler.start(services)?;
-    }
-
-    // Handle service stop
-    if let Some(matches) = matches.subcommand_matches("stop") {
-        let services: Vec<_> = matches.values_of("services").unwrap().collect();
-        service_handler.stop(services)?;
+    // Handle service actions
+    if let Some(service_matches) = matches.subcommand_matches("service") {
+        let mut service_handler = handlers::Service::new();
+    
+        if let Some(start_matches) = service_matches.subcommand_matches("start") {
+            let services: Vec<_> = start_matches.values_of("services").unwrap().collect();
+            let display = start_matches.is_present("display");
+    
+            service_handler.start(services, display)?;
+        }
+        
+        if let Some(stop_matches) = service_matches.subcommand_matches("stop") {
+            let services: Vec<_> = stop_matches.values_of("services").unwrap().collect();
+            service_handler.stop(services)?;
+        }
     }
 
     // Handle network actions
@@ -108,8 +130,14 @@ pub fn execute(matches: &ArgMatches) -> error::Result<()> {
             docker::network::remove(&name)?;
         }
 
-        if let Some(matches) = matches.subcommand_matches("list") {
+        if let Some(_) = matches.subcommand_matches("list") {
             docker::network::show_all();
+        }
+
+        if let Some(matches) = matches.subcommand_matches("connect") {
+            let network: String = matches.value_of("network").unwrap().to_string();
+            let containers: Vec<_> = matches.values_of("container").unwrap().collect();
+            docker::network::connect(&network, &containers)?;
         }
     }
 

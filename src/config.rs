@@ -2,7 +2,7 @@ use serde::{ Serialize, Deserialize };
 use std::collections::HashMap;
 use std::path::Path;
 use std::fs;
-use crate::error::{ Result, CarbonError };
+use crate::error::Result;
 
 
 

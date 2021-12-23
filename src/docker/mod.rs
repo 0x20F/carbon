@@ -1,7 +1,7 @@
 pub mod network;
 
 
-use std::process::{ Command, Output };
+use std::process::{ Command };
 use crate::error::{ Result, CarbonError };
 use crate::macros::unwrap_stderr;
 use std::str;

@@ -8,7 +8,6 @@ use std::collections::HashMap;
 
 
 
-
 static SERVICE_FILE: &'static str = "carbon.yml";
 static COMPOSE_FILE_FORMAT: &'static str = "yml";
 

@@ -5,13 +5,14 @@ extern crate serde;
 #[macro_use] extern crate paris;
 
 
-mod macros;
 mod util;
 mod handlers;
 mod docker;
 mod file;
-mod error;
 mod config;
+
+pub use util::error;
+pub use util::macros;
 
 use clap::{ Arg, App, SubCommand, ArgMatches };
 use dotenv::dotenv;
@@ -101,46 +102,8 @@ fn main() {
 
 
 pub fn execute(matches: &ArgMatches) -> error::Result<()> {
-    // Handle service actions
-    if let Some(service_matches) = matches.subcommand_matches("service") {
-        let mut service_handler = handlers::Service::new();
-    
-        if let Some(start_matches) = service_matches.subcommand_matches("start") {
-            let services: Vec<_> = start_matches.values_of("services").unwrap().collect();
-            let display = start_matches.is_present("display");
-    
-            service_handler.start(services, display)?;
-        }
-        
-        if let Some(stop_matches) = service_matches.subcommand_matches("stop") {
-            let services: Vec<_> = stop_matches.values_of("services").unwrap().collect();
-            service_handler.stop(services)?;
-        }
-    }
-
-    // Handle network actions
-    if let Some(matches) = matches.subcommand_matches("network") {
-        if let Some(matches) = matches.subcommand_matches("create") {
-            let name: String = matches.value_of("name").unwrap().to_string();
-            docker::network::create(&name)?;
-        }
-
-        if let Some(matches) = matches.subcommand_matches("remove") {
-            let name: String = matches.value_of("name").unwrap().to_string();
-            docker::network::remove(&name)?;
-        }
-
-        if let Some(_) = matches.subcommand_matches("list") {
-            docker::network::show_all();
-        }
-
-        if let Some(matches) = matches.subcommand_matches("connect") {
-            let network: String = matches.value_of("network").unwrap().to_string();
-            let containers: Vec<_> = matches.values_of("container").unwrap().collect();
-            docker::network::connect(&network, &containers)?;
-        }
-    }
-
+    handlers::services::handle(matches)?;
+    handlers::network::handle(matches)?;
 
     Ok(())
 }

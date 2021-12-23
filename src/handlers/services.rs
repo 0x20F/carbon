@@ -78,16 +78,22 @@ impl<'p> Service<'p> {
         for (compose_file, services) in to_stop.iter() {
             let containers = services.join(" ");
 
-            self.logger.loading(format!("Stopping services [ <cyan>{}</> ] in compose file <bright-green>{}</>", containers, compose_file));
+            self.logger.loading(
+                format!(
+                    "Stopping services [ <cyan>{}</> ] in compose file <bright-green>{}</>", 
+                    containers, 
+                    compose_file
+                )
+            );
             docker::stop_service_container(&containers, &compose_file)?;
         }
-
         self.logger.success("Stopped all required services");
+
 
         // Update the running services within the config
         config.set_running_services(to_keep);
         Config::save(&config);
-        
+
         Ok(())
     }
 

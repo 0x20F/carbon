@@ -1,5 +1,9 @@
-use std::process::Command;
+pub mod network;
+
+
+use std::process::{ Command, Output };
 use crate::error::{ Result, CarbonError };
+use crate::macros::unwrap_stderr;
 use std::str;
 
 
@@ -40,12 +44,7 @@ pub fn start_service_setup(configuration: &str) -> Result<()> {
                     .output()
                     .expect("Something went wrong when building the generated compose file");
 
-    if !output.status.success() {
-        let stderr = str::from_utf8(&output.stderr).unwrap();
-        return Err(CarbonError::DockerServiceStartup(stderr.to_string()));
-    }
-
-    Ok(())
+    unwrap_stderr!(output, DockerServiceStartup)
 }
 
 
@@ -59,10 +58,5 @@ pub fn stop_service_container(name: &str, configuration: &str) -> Result<()> {
                     .output()
                     .expect("Something went wrong when trying to stop a service in a running compose file");
 
-    if !output.status.success() {
-        let stderr = str::from_utf8(&output.stderr).unwrap();
-        return Err(CarbonError::DockerServiceShutdown(stderr.to_string()));
-    }
-
-    Ok(())
+    unwrap_stderr!(output, DockerServiceShutdown)
 }

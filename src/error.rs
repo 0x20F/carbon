@@ -15,7 +15,10 @@ pub enum CarbonError {
     FileWriteError(String),
 
     DockerServiceStartup(String),
-    DockerServiceShutdown(String)
+    DockerServiceShutdown(String),
+    DockerNetworkCreate(String),
+    DockerNetworkRemove(String),
+    DockerNetworkInspect(String),
 }
 
 
@@ -33,7 +36,10 @@ impl fmt::Display for CarbonError {
             FileWriteError(s) => format!("Couldn't write new <cyan>composed service file</>: <magenta>{}</>", s),
             
             DockerServiceStartup(stderr) => format!("Couldn't start services. <cyan>Docker info below</>:\n{}", stderr),
-            DockerServiceShutdown(stderr) => format!("Couldn't stop services. <cyan>Docker info below</>:\n{}", stderr)
+            DockerServiceShutdown(stderr) => format!("Couldn't stop services. <cyan>Docker info below</>:\n{}", stderr),
+            DockerNetworkCreate(stderr) => format!("Couldn't create new network! <cyan>Docker info below</>:\n{}", stderr),
+            DockerNetworkRemove(stderr) => format!("Couldn't remove network! <cyan>Docker info below:</>\n{}", stderr),
+            DockerNetworkInspect(stderr) => format!("Couldn't inspect network! <cyan>Docker info below:</>\n{}", stderr),
         };
 
         write!(f, "{}", string)

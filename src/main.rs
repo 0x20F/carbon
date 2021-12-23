@@ -5,6 +5,7 @@ extern crate serde;
 #[macro_use] extern crate paris;
 
 
+mod macros;
 mod util;
 mod handlers;
 mod docker;
@@ -42,6 +43,34 @@ fn main() {
                                 .required(true)
                                 .min_values(1))
                     )
+        .subcommand(SubCommand::with_name("network")
+                        .about("Perform actions on docker networks")
+                        .version("1.0")
+                        .author("0x20F")
+                        .subcommand(SubCommand::with_name("create")
+                                        .about("Create a new docker network")
+                                        .version("1.0")
+                                        .author("0x20F")
+                                        .arg(Arg::with_name("name")
+                                                .help("The name of the network")
+                                                .required(true)
+                                                .index(1))
+                                    )
+                        .subcommand(SubCommand::with_name("remove")
+                                        .about("Remove a docker network")
+                                        .version("1.0")
+                                        .author("0x20F")
+                                        .arg(Arg::with_name("name")
+                                                .help("The name of the network")
+                                                .required(true)
+                                                .index(1))
+                                    )
+                        .subcommand(SubCommand::with_name("list")
+                                        .about("List all docker networks")
+                                        .version("1.0")
+                                        .author("0x20F")
+                                    )
+                    )
         .get_matches();
     
 
@@ -65,6 +94,23 @@ pub fn execute(matches: &ArgMatches) -> error::Result<()> {
     if let Some(matches) = matches.subcommand_matches("stop") {
         let services: Vec<_> = matches.values_of("services").unwrap().collect();
         service_handler.stop(services)?;
+    }
+
+    // Handle network actions
+    if let Some(matches) = matches.subcommand_matches("network") {
+        if let Some(matches) = matches.subcommand_matches("create") {
+            let name: String = matches.value_of("name").unwrap().to_string();
+            docker::network::create(&name)?;
+        }
+
+        if let Some(matches) = matches.subcommand_matches("remove") {
+            let name: String = matches.value_of("name").unwrap().to_string();
+            docker::network::remove(&name)?;
+        }
+
+        if let Some(matches) = matches.subcommand_matches("list") {
+            docker::network::show_all();
+        }
     }
 
 

@@ -3,10 +3,10 @@ use crate::file;
 use crate::util::environment;
 
 
-pub struct ServiceStart {}
+pub struct Service {}
 
-impl ServiceStart {
-    pub fn with_services<'a>(services: Vec<&'a str>) {
+impl Service {
+    pub fn start<'a>(services: Vec<&'a str>) {
         // Handle error a bit more nicely
         let environment = environment::get_root_directory();
         let mut configs = vec![];
@@ -18,8 +18,9 @@ impl ServiceStart {
         }
 
         let compose = docker::build_compose_file(&configs);
-        let cleaned = Self::parse_service_file(&compose);
+        let cleaned = environment::parse_variables(&compose);
         let temp_path = file::write_tmp("yml", &cleaned);
+
         // Log the path that was saved as well
         println!("Saved compose file to: {}", temp_path);
 
@@ -28,10 +29,5 @@ impl ServiceStart {
         println!("{}", cleaned);
 
         docker::start_service_setup(&temp_path);
-    }
-
-
-    fn parse_service_file(contents: &str) -> String {
-        contents.replace("${ROOT}", &environment::get_root_directory())
     }
 }

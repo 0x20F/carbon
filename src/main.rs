@@ -36,6 +36,6 @@ fn main() {
         // Have a subcommand handler here
         let services: Vec<_> = matches.values_of("services").unwrap().collect();
 
-        handlers::ServiceStart::with_services(services);
+        handlers::Service::start(services);
     }
 }

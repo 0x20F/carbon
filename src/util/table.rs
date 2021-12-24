@@ -9,7 +9,8 @@ use key_list::KeyList;
 pub struct Table {
     column_count: usize,
     column_padding: Vec<usize>,
-    alignment: Vec<char>
+    alignment: Vec<char>,
+    rows: Vec<String>
 }
 
 impl Table {
@@ -30,51 +31,56 @@ impl Table {
         Table {
             column_count,
             column_padding,
-            alignment
+            alignment,
+            rows: vec![]
         }
     }
 
 
-    pub fn header(&self, elements: Vec<&str>) {
+    pub fn header(&mut self, elements: Vec<&str>) {
         let line = self.pad_strings(&elements);
         
         self.spacer();
-        log!("{}", line);
+        self.rows.push(line);
         self.spacer();
     }
     
     
-    pub fn row(&self, elements: Vec<&str>) {
+    pub fn row(&mut self, elements: Vec<&str>) {
         let line = self.pad_strings(&elements);
-        log!("{}", line);
+        self.rows.push(line);
     }
     
     
-    pub fn footer(&self, text: &str) {
+    pub fn footer(&mut self, text: &str) {
         // Format the text to be as wide as all the columns combined
         let padding = self.column_padding.iter().sum::<usize>();
         let padded = format!("{:width$}", text, width = padding);
 
         // Call log in case there are any colors in there
-        log!("{}", padded);
+        self.rows.push(padded);
     }
 
 
-    pub fn close(&self) {
+    pub fn display(&mut self) {
+        // Close the table
         self.spacer();
+
+        for row in &self.rows {
+            log!("{}", row);
+        }
     }
 
 
-    fn spacer(&self) {
+    fn spacer(&mut self) {
         let mut spacer = vec![];
 
         for i in 0..self.column_count {
             spacer.push("-".repeat(self.column_padding[i] + 2));
         }
 
-        let joined = format!("{}+", spacer.join("+"));
-
-        log!("<black>{}</>", joined);
+        let joined = format!("<black>+{}+</>", spacer.join("+"));
+        self.rows.push(joined);
     }
 
 
@@ -90,6 +96,7 @@ impl Table {
                 
                 let keys = KeyList::new(&formatted, '[', 'm');
                 let ansi_char_count = keys.map(|s| s.len()).sum::<usize>();
+                let start_char = if i == 0 { "|" } else { "" };
 
                 // Increase the padding to make it even since it'll
                 // add less because of the invisible characters
@@ -109,7 +116,7 @@ impl Table {
                 };
 
                 // Format one more time with separator
-                format!(" {} <black>|</>", aligned)
+                format!("<black>{}</> {} <black>|</>", start_char, aligned)
             })
             .collect::<Vec<String>>();
     

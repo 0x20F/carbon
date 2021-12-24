@@ -124,7 +124,7 @@ impl Footprint {
 
 
     pub fn print_as_table(&self) {
-        let table = Table::new(
+        let mut table = Table::new(
             3, 
             vec![5, 60, 7], 
             vec!['^', '<', '^']
@@ -154,7 +154,7 @@ impl Footprint {
             table.row(vec![&id, &path, enabled]);
         }
 
-        table.close();
+        table.display();
     }
 
 

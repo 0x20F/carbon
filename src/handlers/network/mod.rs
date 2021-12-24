@@ -25,6 +25,13 @@ pub fn handle(matches: &ArgMatches) -> Result<()> {
             let containers: Vec<_> = matches.values_of("container").unwrap().collect();
             docker::network::connect(&network, &containers)?;
         }
+
+        // Handle disconnect
+        if let Some(matches) = matches.subcommand_matches("disconnect") {
+            let network: String = matches.value_of("network").unwrap().to_string();
+            let containers: Vec<_> = matches.values_of("container").unwrap().collect();
+            docker::network::disconnect(&network, &containers)?;
+        }
     }
 
     Ok(())

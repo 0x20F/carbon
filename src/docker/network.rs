@@ -66,9 +66,7 @@ pub fn show_all() {
         .trim()
         .split("\n")
         .collect();
-    let inspections = inspect(&networks);
-    let json: Vec<Network> = serde_json::from_str(&inspections).unwrap();
-
+    let json = inspect(&networks);
 
     print_table_header();
     for network in json {
@@ -77,22 +75,70 @@ pub fn show_all() {
 }
 
 
-pub fn connect(network: &str, containers: &[&str]) -> Result<()> {
-    info!("Connecting <cyan>[</>{}<cyan>]</> containers to network: <magenta>{}</>", containers.join(", "), network);
+pub fn connect(network: &str, container_names: &[&str]) -> Result<()> {
+    run_if_container(
+        container_names,
+        |container| {
+            let output = Command::new("docker")
+                .arg("network")
+                .arg("connect")
+                .arg(network)
+                .arg(container.name())
+                .output()
+                .expect("Something went wrong when connecting to the network");
 
-    for container in containers.iter() {
-        let output = Command::new("docker")
-            .arg("network")
-            .arg("connect")
-            .arg(network)
-            .arg(container)
-            .output()
-            .expect("Something went wrong when connecting to the network");
+            // TODO: Report container being already connected?
 
-        // Print the error if it exists
-        if !output.status.success() {
-            let stderr = std::str::from_utf8(&output.stderr).unwrap();
-            return Err(CarbonError::DockerNetworkConnect(stderr.to_string()));
+            success!("Container <cyan>{}</> connected to the network <magenta>{}</>", container.name(), network);
+        }
+    )
+}
+
+
+pub fn disconnect(network: &str, container_names: &[&str]) -> Result<()> {
+    run_if_container(
+        container_names,
+        |container| {
+            let output = Command::new("docker")
+                .arg("network")
+                .arg("disconnect")
+                .arg(network)
+                .arg(container.name())
+                .output()
+                .expect("Something went wrong when disconnecting from the network");
+
+            // TODO: Report container not being part of the network?
+
+            success!("Container <cyan>{}</> disconnected from the network <magenta>{}</>", container.name(), network);
+        }
+    )
+}
+
+
+
+fn run_if_container<F>(to_match: &[&str], f: F) -> Result<()>
+    where F: Fn(&super::container::Container) 
+{
+    let containers = super::container::all();
+
+    for name in to_match {
+        let mut exists = false;
+        
+        for container in containers.iter() {
+            // Check if container actually exists
+            if container.name() != *name {
+                continue;
+            }
+
+            exists = true;
+
+            f(container);
+        }
+
+        // No need to fail hard if the container doesn't exist
+        // just inform the user that the action won't happen for hat container
+        if !exists {
+            warn!("(ignoring) Container <cyan>{}</> doesn't exist, <bright-green>try</> starting the service first", name);
         }
     }
 
@@ -101,8 +147,7 @@ pub fn connect(network: &str, containers: &[&str]) -> Result<()> {
 
 
 
-
-fn inspect(networks: &Vec<&str>) -> String {
+fn inspect(networks: &Vec<&str>) -> Vec<Network> {
     let mut command = Command::new("docker");
     
     command
@@ -121,9 +166,9 @@ fn inspect(networks: &Vec<&str>) -> String {
         println!("{}", stderr);
     }
 
-    stdout
-        .trim()
-        .to_string()
+    let json: Vec<Network> = serde_json::from_str(&stdout.trim().to_string()).unwrap();
+
+    json
 }
 
 
@@ -140,4 +185,8 @@ fn print_network_information(network: &Network) {
     };
 
     log!("<bright-green>#</> {:20}  <cyan>[</> {} <cyan>]</>", network.name, containers.join(", "));
+}
+
+fn logger<'a>() -> paris::Logger<'a> {
+    paris::Logger::new()
 }

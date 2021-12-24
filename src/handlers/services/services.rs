@@ -2,7 +2,7 @@ use crate::docker;
 use crate::file;
 use crate::util::environment;
 use crate::error::Result;
-use crate::config::Config;
+use crate::config::Emissions;
 use paris::Logger;
 use std::collections::HashMap;
 
@@ -27,7 +27,7 @@ impl<'p> Service<'p> {
 
     pub fn start<'a>(&mut self, services: Vec<&'a str>, display: bool) -> Result<()> {
         let environment = environment::get_root_directory()?;
-        let mut carbon_conf = Config::get();
+        let mut carbon_conf = Emissions::get();
         let mut configs = vec![];
 
         for service in services.iter() {
@@ -49,13 +49,13 @@ impl<'p> Service<'p> {
         carbon_conf.add_running_service(&temp_path, services);
 
         // Only save to config if service startup succeeded!
-        Config::save(&carbon_conf)?;
+        Emissions::save(&carbon_conf)?;
         Ok(())
     }
 
 
     pub fn stop<'a>(&mut self, services: Vec<&'a str>) -> Result<()> {
-        let mut config = Config::get();
+        let mut config = Emissions::get();
         let mut to_stop: HashMap<String, Vec<String>> = HashMap::new();
         let mut to_keep: HashMap<String, Vec<String>> = HashMap::new();
 
@@ -94,7 +94,7 @@ impl<'p> Service<'p> {
 
         // Update the running services within the config
         config.set_running_services(to_keep);
-        Config::save(&config)?;
+        Emissions::save(&config)?;
 
         Ok(())
     }

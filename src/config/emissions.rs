@@ -6,23 +6,23 @@ use crate::error::Result;
 
 
 
-static CONFIG_PATH: &'static str = "/tmp/carbon-footprint.toml";
+static CONFIG_PATH: &'static str = "/tmp/carbon-emissions.toml";
 
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Config {
+pub struct Emissions {
     running: HashMap<String, Vec<String>>
 }
 
-impl Default for Config {
-    fn default() -> Config {
+impl Default for Emissions {
+    fn default() -> Emissions {
         Self {
             running: HashMap::new()
         }
     }
 }
 
-impl Config {
+impl Emissions {
     pub fn get() -> Self {
         // Create a fresh struct if it's not already written to file
         match fs::read_to_string(CONFIG_PATH) {
@@ -32,7 +32,7 @@ impl Config {
     }
 
 
-    pub fn save(config: &Config) -> Result<()> {
+    pub fn save(config: &Self) -> Result<()> {
         let content = toml::to_string(config).unwrap();
         fs::write(CONFIG_PATH, &content).expect("Couldn't save config file");
 

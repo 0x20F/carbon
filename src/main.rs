@@ -2,6 +2,7 @@ extern crate clap;
 extern crate dotenv;
 extern crate rand;
 extern crate serde;
+extern crate shellexpand;
 #[macro_use] extern crate paris;
 
 
@@ -86,6 +87,20 @@ fn main() {
                                                 .index(1))
                                         .arg(Arg::with_name("container")
                                                 .help("The name/names of all containers that should connect to the network")
+                                                .required(true)
+                                                .index(2)
+                                                .min_values(1))
+                                    )
+                        .subcommand(SubCommand::with_name("disconnect")
+                                        .about("Disconnect a container from a network")
+                                        .version("1.0")
+                                        .author("0x20F")
+                                        .arg(Arg::with_name("network")
+                                                .help("The name of the network")
+                                                .required(true)
+                                                .index(1))
+                                        .arg(Arg::with_name("container")
+                                                .help("The name/names of all containers that should disconnect from the network")
                                                 .required(true)
                                                 .index(2)
                                                 .min_values(1))

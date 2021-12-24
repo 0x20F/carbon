@@ -3,6 +3,7 @@ extern crate dotenv;
 extern crate rand;
 extern crate serde;
 extern crate shellexpand;
+extern crate key_list;
 #[macro_use] extern crate paris;
 
 

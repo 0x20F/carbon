@@ -1,4 +1,5 @@
 use paris::formatter::colorize_string;
+use key_list::KeyList;
 
 
 
@@ -39,10 +40,10 @@ impl Table {
         let mut spacer = vec![];
 
         for i in 0..self.column_count {
-            spacer.push("-".repeat(self.column_padding[i] + (i + 1)));
+            spacer.push("-".repeat(self.column_padding[i] + 2));
         }
 
-        let joined = spacer.join("+");
+        let joined = format!("{}+", spacer.join("+"));
 
         log!("<black>{}</>\n{}\n<black>{}</>", joined, line, joined);
     }
@@ -73,18 +74,14 @@ impl Table {
                 let formatted = colorize_string(*e);
                 let alignment = self.alignment[i];
                 let padding = self.column_padding[i];
-    
-                // Figure out what length of characters is "invisible" characters
-                let non_text = formatted
-                    .chars()
-                    .filter(|c| !c.is_alphanumeric() && !&['/', '.'].contains(c) )
-                    .map(|c| c.len_utf8())
-                    .sum::<usize>();
+                
+                let keys = KeyList::new(&formatted, '[', 'm');
+                let ansi_char_count = keys.map(|s| s.len()).sum::<usize>();
 
                 // Increase the padding to make it even since it'll
                 // add less because of the invisible characters
-                let width = if non_text > 0 {
-                    padding + non_text * 2 + 1
+                let width = if ansi_char_count > 0 {
+                    padding + ansi_char_count + 2
                 } else {
                     padding
                 };
@@ -99,13 +96,13 @@ impl Table {
                 };
 
                 // Format one more time with separator
-                format!("{} <black>|</>", aligned)
+                format!(" {} <black>|</>", aligned)
             })
             .collect::<Vec<String>>();
     
     
         // Put all the strings back together into a line
-        format!("{}", padded.join(" "))
+        format!("{}", padded.join(""))
     }
 }
 

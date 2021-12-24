@@ -12,8 +12,8 @@ static CONFIG_PATH: &'static str = "~/.local/carbon-footprint.toml";
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Dotenv {
-    pub active: bool,
-    pub id: String,
+    active: bool,
+    id: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

@@ -3,6 +3,7 @@ use crate::error::{ Result, CarbonError };
 use crate::macros::unwrap_stderr;
 use std::collections::HashMap;
 use serde::Deserialize;
+use crate::util::table::Table;
 
 
 
@@ -18,8 +19,6 @@ pub struct Network {
 #[serde(rename_all = "PascalCase")]
 pub struct Container {
     name: String,
-    #[serde(rename = "IPv4Address")]
-    ipv4: String,
 }
 
 
@@ -68,9 +67,30 @@ pub fn show_all() {
         .collect();
     let json = inspect(&networks);
 
-    print_table_header();
+    let table = Table::new(3, vec![20, 40, 10], vec![]);
+
+    table.header(vec![
+        "Name",
+        "Containers",
+        "Lmao"
+    ]);
+
     for network in json {
-        print_network_information(&network);
+        // Build a string of all the container names in a network
+        let container_names = network
+            .containers
+            .as_ref()
+            .unwrap()
+            .iter()
+            .map(|(_, container)| container.name.as_str())
+            .collect::<Vec<&str>>()
+            .join(", ");
+
+       table.row(vec![
+           network.name.as_str(),
+           &format!("<cyan>[</> {} <cyan>]</>", container_names),
+           "<bright-red>ayeee</>"
+       ]); 
     }
 }
 
@@ -79,7 +99,7 @@ pub fn connect(network: &str, container_names: &[&str]) -> Result<()> {
     run_if_container(
         container_names,
         |container| {
-            let output = Command::new("docker")
+            Command::new("docker")
                 .arg("network")
                 .arg("connect")
                 .arg(network)
@@ -99,7 +119,7 @@ pub fn disconnect(network: &str, container_names: &[&str]) -> Result<()> {
     run_if_container(
         container_names,
         |container| {
-            let output = Command::new("docker")
+            Command::new("docker")
                 .arg("network")
                 .arg("disconnect")
                 .arg(network)
@@ -169,24 +189,4 @@ fn inspect(networks: &Vec<&str>) -> Vec<Network> {
     let json: Vec<Network> = serde_json::from_str(&stdout.trim().to_string()).unwrap();
 
     json
-}
-
-
-fn print_table_header() {
-    log!("<bright-green>#</> {:20}  <cyan>{}</>", "Networks", "Containers");
-    log!("  {:20}  {}", "--------", "---------");
-}
-
-
-fn print_network_information(network: &Network) {
-    let containers = match &network.containers {
-        Some(c) => c.values().map(|c| String::from(&c.name)).collect::<Vec<String>>(),
-        None => vec![]
-    };
-
-    log!("<bright-green>#</> {:20}  <cyan>[</> {} <cyan>]</>", network.name, containers.join(", "));
-}
-
-fn logger<'a>() -> paris::Logger<'a> {
-    paris::Logger::new()
 }

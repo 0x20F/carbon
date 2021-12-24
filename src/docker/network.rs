@@ -63,12 +63,13 @@ pub fn show_all() {
 
     let stdout = std::str::from_utf8(&output.stdout).unwrap();
     let networks: Vec<&str> = stdout
+        .trim()
         .split("\n")
         .collect();
     let inspections = inspect(&networks);
     let json: Vec<Network> = serde_json::from_str(&inspections).unwrap();
 
-    
+
     print_table_header();
     for network in json {
         print_network_information(&network);

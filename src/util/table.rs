@@ -37,15 +37,10 @@ impl Table {
 
     pub fn header(&self, elements: Vec<&str>) {
         let line = self.pad_strings(&elements);
-        let mut spacer = vec![];
-
-        for i in 0..self.column_count {
-            spacer.push("-".repeat(self.column_padding[i] + 2));
-        }
-
-        let joined = format!("{}+", spacer.join("+"));
-
-        log!("<black>{}</>\n{}\n<black>{}</>", joined, line, joined);
+        
+        self.spacer();
+        log!("{}", line);
+        self.spacer();
     }
     
     
@@ -62,6 +57,24 @@ impl Table {
 
         // Call log in case there are any colors in there
         log!("{}", padded);
+    }
+
+
+    pub fn close(&self) {
+        self.spacer();
+    }
+
+
+    fn spacer(&self) {
+        let mut spacer = vec![];
+
+        for i in 0..self.column_count {
+            spacer.push("-".repeat(self.column_padding[i] + 2));
+        }
+
+        let joined = format!("{}+", spacer.join("+"));
+
+        log!("<black>{}</>", joined);
     }
 
 

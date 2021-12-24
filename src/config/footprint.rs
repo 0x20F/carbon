@@ -153,6 +153,8 @@ impl Footprint {
 
             table.row(vec![&id, &path, enabled]);
         }
+
+        table.close();
     }
 
 

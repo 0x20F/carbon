@@ -92,6 +92,8 @@ pub fn show_all() {
            "<bright-red>ayeee</>"
        ]); 
     }
+
+    table.close();
 }
 
 

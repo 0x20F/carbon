@@ -21,7 +21,16 @@ use dotenv::dotenv;
 
 
 fn main() {
-    dotenv().ok();
+    let footprint = config::Footprint::get();
+
+    match footprint.get_current_env() {
+        // Take from the predefined path if provided
+        Some(path) => { dotenv::from_path(path).ok(); },
+
+        // Otherwise take from the current running directory
+        None => { dotenv::dotenv().ok(); },
+    }
+
 
     let matches = App::new("carbon")
         .version("1.0")
@@ -36,14 +45,27 @@ fn main() {
                                                 .required(true)
                                                 .index(1)
                                         )
+                                        .arg(Arg::with_name("identifier")
+                                                .help("Identifier for the dotenv file")
+                                                .required(true)
+                                                .index(2)
+                                        )
                                     )
                         .subcommand(SubCommand::with_name("list")
                                         .about("List all dotenv files")
                                     )
                         .subcommand(SubCommand::with_name("remove")
                                         .about("Remove a dotenv file path")
-                                        .arg(Arg::with_name("path")
-                                                .help("The index of the path you want to remove")
+                                        .arg(Arg::with_name("identifier")
+                                                .help("The ID of the path you want to remove")
+                                                .required(true)
+                                                .index(1)
+                                            )
+                                    )
+                        .subcommand(SubCommand::with_name("activate")
+                                        .about("Set a dotenv file as active")
+                                        .arg(Arg::with_name("identifier")
+                                                .help("The ID of the path you want to activate")
                                                 .required(true)
                                                 .index(1)
                                             )
@@ -141,7 +163,7 @@ fn main() {
 pub fn execute(matches: &ArgMatches) -> error::Result<()> {
     handlers::services::handle(matches)?;
     handlers::network::handle(matches)?;
-    
+    handlers::env::handle(matches)?;    
 
     Ok(())
 }

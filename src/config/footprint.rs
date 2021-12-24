@@ -10,13 +10,13 @@ static CONFIG_PATH: &'static str = "~/.local/carbon-footprint.toml";
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Footprint {
-    running: HashMap<String, Vec<String>>
+    dotenv: HashMap<String, bool>
 }
 
 impl Default for Footprint {
     fn default() -> Footprint {
         Self {
-            running: HashMap::new()
+            dotenv: HashMap::new()
         }
     }
 }

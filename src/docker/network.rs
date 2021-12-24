@@ -11,7 +11,7 @@ use serde::Deserialize;
 #[serde(rename_all = "PascalCase")]
 pub struct Network {
     name: String,
-    containers: HashMap<String, Container>,
+    containers: Option<HashMap<String, Container>>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -62,20 +62,16 @@ pub fn show_all() {
         .expect("Something went wrong when listing all networks");
 
     let stdout = std::str::from_utf8(&output.stdout).unwrap();
-    let networks: Vec<&str> = stdout.split("\n").collect();
+    let networks: Vec<&str> = stdout
+        .split("\n")
+        .collect();
+    let inspections = inspect(&networks);
+    let json: Vec<Network> = serde_json::from_str(&inspections).unwrap();
 
+    
     print_table_header();
-
-    for network in networks {
-        let i = inspect(&network);
-        let n = serde_json::from_str::<Network>(&i);
-
-        if n.is_err() {
-            continue; // Ignore errors for now
-        }
-
-        let n = n.unwrap();
-        print_network_information(&n);
+    for network in json {
+        print_network_information(&network);
     }
 }
 
@@ -105,18 +101,28 @@ pub fn connect(network: &str, containers: &[&str]) -> Result<()> {
 
 
 
-fn inspect(name: &str) -> String {
-    let output = Command::new("docker")
+fn inspect(networks: &Vec<&str>) -> String {
+    let mut command = Command::new("docker");
+    
+    command
         .arg("network")
-        .arg("inspect")
-        .arg(name)
-        .output()
-        .expect("Something went wrong when inspecting the network");
+        .arg("inspect");
 
+    for network in networks.iter() {
+        command.arg(*network);
+    }
+
+    let output = command.output().expect("Something went wrong when inspecting networks");
     let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    
+    if !output.status.success() {
+        let stderr = std::str::from_utf8(&output.stderr).unwrap();
+        println!("{}", stderr);
+    }
 
-    // Trim whitespace, [ and ] from the beginning and end of the string
-    stdout.trim().trim_matches('[').trim_matches(']').to_string()
+    stdout
+        .trim()
+        .to_string()
 }
 
 
@@ -127,7 +133,10 @@ fn print_table_header() {
 
 
 fn print_network_information(network: &Network) {
-    let containers = network.containers.values().map(|c| c.name.as_str()).collect::<Vec<&str>>();
+    let containers = match &network.containers {
+        Some(c) => c.values().map(|c| String::from(&c.name)).collect::<Vec<String>>(),
+        None => vec![]
+    };
 
     log!("<bright-green>#</> {:20}  <cyan>[</> {} <cyan>]</>", network.name, containers.join(", "));
 }

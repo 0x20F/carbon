@@ -4,6 +4,7 @@ mod services;
 use services::Service;
 use clap::ArgMatches;
 use crate::error::Result;
+use crate::docker;
 
 
 
@@ -21,6 +22,10 @@ pub fn handle(matches: &ArgMatches) -> Result<()> {
         if let Some(stop_matches) = service_matches.subcommand_matches("stop") {
             let services: Vec<_> = stop_matches.values_of("services").unwrap().collect();
             service_handler.stop(services)?;
+        }
+
+        if let Some(list_matches) = service_matches.subcommand_matches("list") {
+            docker::container::show_all();
         }
     }
 

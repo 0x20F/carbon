@@ -1,6 +1,7 @@
 use serde::Deserialize;
 use std::process::Command;
 use std::collections::HashMap;
+use crate::util::table::Table;
 
 
 
@@ -12,6 +13,8 @@ pub struct Container {
 
     #[serde(rename = "NetworkSettings")]
     pub settings: NetworkSettings,
+
+    pub state: State 
 }
 
 impl Container {
@@ -32,7 +35,14 @@ pub struct NetworkSettings {
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "PascalCase")]
 pub struct Network {
-    pub aliases: Vec<String>,
+    pub aliases: Option<Vec<String>>,
+}
+
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "PascalCase")]
+pub struct State {
+    status: String
 }
 
 
@@ -42,6 +52,7 @@ pub fn all() -> Vec<Container> {
     let output = Command::new("docker")
         .arg("container")
         .arg("ls")
+        .arg("-a")
         .arg("--format")
         .arg("{{.Names}}")
         .output()
@@ -54,6 +65,33 @@ pub fn all() -> Vec<Container> {
         .collect();
     
     inspect(&containers)
+}
+
+
+
+pub fn show_all() {
+    let containers = all();
+    let mut table = Table::new(3, vec![]);
+
+    table.header(vec![ "Name", "Network", "Status" ]);
+
+    for container in containers {
+        let color = match container.state.status.as_str() {
+            "running" => "cyan",
+            "exited" => "black",
+            "stopped" => "black",
+            _ => "yellow"
+        };
+        let networks = container.settings.networks.keys().map(|s| &**s).collect::<Vec<_>>();
+    
+        table.row(vec![
+            &format!("<{}>{}</>", color, container.name()),
+            &format!("<{}>{}</>", color, networks.join(", ")),
+            &format!("<{}>{}</>", color, container.state.status)
+        ]);
+    }
+
+    table.display();
 }
 
 

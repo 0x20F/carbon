@@ -24,8 +24,13 @@ pub fn handle(matches: &ArgMatches) -> Result<()> {
             service_handler.stop(services)?;
         }
 
-        if let Some(list_matches) = service_matches.subcommand_matches("list") {
+        if let Some(_) = service_matches.subcommand_matches("list") {
             docker::container::show_all();
+        }
+
+        if let Some(rebuild_matches) = service_matches.subcommand_matches("rebuild") {
+            let services: Vec<_> = rebuild_matches.values_of("services").unwrap().collect();
+            service_handler.rebuild(services)?;
         }
     }
 

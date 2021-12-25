@@ -1,7 +1,7 @@
 use crate::docker;
 use crate::file;
 use crate::util::environment;
-use crate::error::Result;
+use crate::error::{ Result, CarbonError };
 use crate::config::Emissions;
 use paris::Logger;
 use std::collections::HashMap;
@@ -30,15 +30,32 @@ impl<'p> Service<'p> {
         let mut carbon_conf = Emissions::get();
         let mut configs = vec![];
 
+        // Check if any of the provided services are already running
+        for service in services.iter() {
+            // If they are, we don't continue
+            let values = carbon_conf.get_running_services().values();
+
+            for value in values {
+                if value.contains(&service.to_string()) {
+                    return Err(CarbonError::ServiceAlreadyRunning(service.to_string()));
+                }
+            }
+        }
+
+        self.logger.info("Gathering individual service configurations...");
+
         for service in services.iter() {
             let path = format!("{}/{}/{}", environment, service, SERVICE_FILE);
             configs.push(file::get_contents(&path)?);
         }
 
+        self.logger.info("Building docker-compose file for all services to live in...");
+
         let compose = docker::build_compose_file(&configs);
         let cleaned = environment::parse_variables(&compose)?;
         let temp_path = file::write_tmp(COMPOSE_FILE_FORMAT, &cleaned)?;
 
+        self.logger.info("Starting all services...");
         
         if display {
             println!("Saved compose file to: {}", temp_path);
@@ -46,9 +63,9 @@ impl<'p> Service<'p> {
         }
 
         docker::start_service_setup(&temp_path)?;
-        carbon_conf.add_running_service(&temp_path, services);
+        self.logger.success("Services should be up!");
 
-        // Only save to config if service startup succeeded!
+        carbon_conf.add_running_service(&temp_path, services);
         Emissions::save(&carbon_conf)?;
         Ok(())
     }
@@ -95,6 +112,32 @@ impl<'p> Service<'p> {
         // Update the running services within the config
         config.set_running_services(to_keep);
         Emissions::save(&config)?;
+
+        Ok(())
+    }
+
+
+    pub fn rebuild<'a>(&mut self, services: Vec<&'a str>) -> Result<()> {
+        let config = Emissions::get();
+
+        for s in services {
+            // Find the compose file for each service
+            for (compose_file, running) in config.get_running_services().iter() {
+                if !running.contains(&s.to_string()) {
+                    continue;
+                }
+
+                self.logger.loading(format!("Stopping service <bright-green>{}</> in (<magenta>{}</>)", s, compose_file));
+                docker::container::stop(s);
+
+                self.logger.info(format!("Rebuilding service: <bright-green>{}</> in (<magenta>{}</>)", s, compose_file));
+                docker::rebuild_specific_service_setup(s, &compose_file)?;
+
+                // Only need to run once since docker doesn't allow
+                // multiple containers to have the same name
+                break;
+            }
+        }
 
         Ok(())
     }

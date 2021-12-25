@@ -96,6 +96,17 @@ pub fn show_all() {
 
 
 
+pub fn stop(container: &str) {
+    Command::new("docker")
+        .arg("container")
+        .arg("stop")
+        .arg(container)
+        .output()
+        .expect("Something went wrong when stopping a container");
+}
+
+
+
 fn inspect(containers: &[&str]) -> Vec<Container> {
     let mut command = Command::new("docker");
 

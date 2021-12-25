@@ -49,6 +49,23 @@ pub fn start_service_setup(configuration: &str) -> Result<()> {
 }
 
 
+pub fn rebuild_specific_service_setup(name: &str, configuration: &str) -> Result<()> {
+    let output = Command::new("docker")
+                    .arg("compose")
+                    .arg("--file")
+                    .arg(configuration)
+                    .arg("up")
+                    .arg("-d")
+                    .arg("--no-deps")
+                    .arg("--build")
+                    .arg(name)
+                    .output()
+                    .expect("Something went wrong when trying to start a service in a running compose file");
+
+    unwrap_stderr!(output, DockerServiceStartup)
+}
+
+
 pub fn stop_service_container(name: &str, configuration: &str) -> Result<()> {
     let output = Command::new("docker")
                     .arg("compose")

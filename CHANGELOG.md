@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [unreleased]
+
+### Bug Fixes
+
+- Use the longer dashes in spacers
+
+### Features
+
+- New command 'add' for starting + adding the started containers to an already existing network
+
 ## [1.0.0] - 2021-12-25
 
 ### Features

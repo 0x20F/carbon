@@ -33,6 +33,17 @@ pub fn handle(matches: &ArgMatches) -> Result<()> {
             let services: Vec<_> = rebuild_matches.values_of("services").unwrap().collect();
             service_handler.rebuild(services)?;
         }
+
+        if let Some(add_matches) = service_matches.subcommand_matches("add") {
+            let network: String = add_matches.value_of("network").unwrap().to_string();
+            let services: Vec<_> = add_matches.values_of("services").unwrap().collect();
+
+            // Start services
+            service_handler.start(services.clone(), false)?;
+
+            // Add them to the network
+            docker::network::connect(&network, &services)?;
+        }
     }
 
     Ok(())

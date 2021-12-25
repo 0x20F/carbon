@@ -67,7 +67,7 @@ pub fn show_all() {
         .collect();
     let json = inspect(&networks);
 
-    let mut table = Table::new(2, vec![20, 40, 10], vec![]);
+    let mut table = Table::new(2, vec![]);
 
     table.header(vec![
         "Name",

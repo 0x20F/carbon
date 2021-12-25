@@ -126,7 +126,6 @@ impl Footprint {
     pub fn print_as_table(&self) {
         let mut table = Table::new(
             3, 
-            vec![5, 60, 7], 
             vec!['^', '<', '^']
         );
 

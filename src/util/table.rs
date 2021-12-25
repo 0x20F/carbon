@@ -9,23 +9,16 @@ use std::fmt::Display;
 
 pub struct Table {
     column_count: usize,
-    column_padding: Vec<usize>,
+    paddings: Vec<usize>,
     alignment: Vec<char>,
-    rows: Vec<String>,
-    columns: Vec<Vec<String>>,
-    longest: Vec<usize>
+    columns: Vec<Vec<String>>
 }
 
 impl Table {
     pub fn new(
-        column_count: usize, 
-        mut column_padding: Vec<usize>,
+        column_count: usize,
         mut alignment: Vec<char>
     ) -> Self {
-        if column_padding.len() < column_count {
-            column_padding.resize(column_count, 20);
-        }
-
         if alignment.len() < column_count {
             alignment.resize(column_count, '<');
         }
@@ -35,19 +28,16 @@ impl Table {
             cols.push(vec![]);
         }
 
-        let mut longest = vec![];
+        let mut paddings = vec![];
         for _ in 0..column_count {
-            longest.push(0);
+            paddings.push(0);
         }
-
 
         Table {
             column_count,
-            column_padding,
+            paddings,
             alignment,
-            rows: vec![],
-            columns: cols,
-            longest
+            columns: cols
         }
     }
 
@@ -62,13 +52,12 @@ impl Table {
     }
     
     
-    pub fn footer(&mut self, text: &str) {
+    pub fn footer(&mut self, _text: &str) {
         // Format the text to be as wide as all the columns combined
-        let padding = self.column_padding.iter().sum::<usize>();
-        let padded = format!("{:width$}", text, width = padding);
+        //let padding = self.paddings.iter().sum::<usize>();
+        //let padded = format!("{:width$}", text, width = padding);
 
-        // Call log in case there are any colors in there
-        self.rows.push(padded);
+        // TODO: Make it span the all columns
     }
 
 
@@ -80,8 +69,8 @@ impl Table {
             let paris_key_count = keys.map(|s| s.len()).sum::<usize>();
             let len = element.len() - paris_key_count;
 
-            if len > self.longest[index] {
-                self.longest[index] = len;
+            if len > self.paddings[index] {
+                self.paddings[index] = len;
             }
             
             self.columns[index].push(element);
@@ -106,34 +95,12 @@ impl Table {
                 let string = &col[i];
 
                 let formatted = colorize_string(string);
-                let alignment = self.alignment[j];
-                let padding = self.longest[j];
-
-                // Find all the ANSI escape codes in the string to adapt the padding
-                let keys = KeyList::new(&formatted, '[', 'm');
-                let ansi_char_count = keys.map(|s| s.len()).sum::<usize>();
-
+                let padded = self.pad_string(&formatted, self.alignment[j], self.paddings[j]);
                 // First column's first character opens the table row
                 let start_char = if j == 0 { "|" } else { "" };
 
-                // Increase the padding to make it even since it'll
-                // add less because of the invisible characters
-                let width = if ansi_char_count > 0 {
-                    padding + ansi_char_count + 2
-                } else {
-                    padding
-                };
-
-                // Format the string with the custom width padding
-                let aligned = match alignment {
-                    '<' => format!("{:<width$}", formatted, width = width),
-                    '>' => format!("{:>width$}", formatted, width = width),
-                    'v' | '^' => format!("{:^width$}", formatted, width = width),
-                    _ => panic!("Invalid alignment")
-                };
-
                 // Format one more time with separator
-                let ready = format!("<black>{}</> {} <black>|</>", start_char, aligned);
+                let ready = format!("<black>{}</> {} <black>|</>", start_char, padded);
 
                 row.push(ready);
             }
@@ -170,12 +137,12 @@ impl Table {
     fn spacer(&self, c_start: char, c_mid: char, c_end: char) {
         let mut pieces = vec![];
 
-        let left = format!("{}{}", c_start, "-".repeat(self.longest[0] + 2));
-        let right = format!("{}{}{}", c_mid, "-".repeat(self.longest[self.column_count - 1] + 2), c_end);
+        let left = format!("{}{}", c_start, "-".repeat(self.paddings[0] + 2));
+        let right = format!("{}{}{}", c_mid, "-".repeat(self.paddings[self.column_count - 1] + 2), c_end);
 
         pieces.push(left);
         for i in 1..self.column_count - 1 {
-            pieces.push(format!("{}{}", c_mid, "-".repeat(self.longest[i] + 2)));
+            pieces.push(format!("{}{}", c_mid, "-".repeat(self.paddings[i] + 2)));
         }
         pieces.push(right);
 
@@ -183,45 +150,26 @@ impl Table {
     }
 
 
-    fn pad_strings(&self, strings: &Vec<&str>) -> String {
-        let padded = strings
-            .iter()
-            .enumerate()
-            .map(|(i, e)| {
-                // Parse any paris colors from the string
-                let formatted = colorize_string(*e);
-                let alignment = self.alignment[i];
-                let padding = self.column_padding[i];
-                
-                let keys = KeyList::new(&formatted, '[', 'm');
-                let ansi_char_count = keys.map(|s| s.len()).sum::<usize>();
-                let start_char = if i == 0 { "|" } else { "" };
+    fn pad_string(&self, string: &str, alignment: char, padding: usize) -> String {
+        // Find all the ANSI escape codes in the string to adapt the padding
+        let keys = KeyList::new(string, '[', 'm');
+        let ansi_char_count = keys.map(|s| s.len()).sum::<usize>();
 
-                // Increase the padding to make it even since it'll
-                // add less because of the invisible characters
-                let width = if ansi_char_count > 0 {
-                    padding + ansi_char_count + 2
-                } else {
-                    padding
-                };
+        // Increase the padding to make it even since it'll
+        // add less because of the invisible characters
+        let width = if ansi_char_count > 0 {
+            padding + ansi_char_count + 2
+        } else {
+            padding
+        };
 
-    
-                // Format the string with the custom width padding
-                let aligned = match alignment {
-                    '<' => format!("{:<width$}", formatted, width = width),
-                    '>' => format!("{:>width$}", formatted, width = width),
-                    'v' | '^' => format!("{:^width$}", formatted, width = width),
-                    _ => panic!("Invalid alignment")
-                };
-
-                // Format one more time with separator
-                format!("<black>{}</> {} <black>|</>", start_char, aligned)
-            })
-            .collect::<Vec<String>>();
-    
-    
-        // Put all the strings back together into a line
-        format!("{}", padded.join(""))
+        // Format the string with the custom width padding
+        match alignment {
+            '<' => format!("{:<width$}", string, width = width),
+            '>' => format!("{:>width$}", string, width = width),
+            'v' | '^' => format!("{:^width$}", string, width = width),
+            _ => panic!("Invalid alignment")
+        }
     }
 }
 

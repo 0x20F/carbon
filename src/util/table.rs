@@ -140,12 +140,12 @@ impl Table {
     fn spacer(&self, c_start: char, c_mid: char, c_end: char) {
         let mut pieces = vec![];
 
-        let left = format!("{}{}", c_start, "-".repeat(self.paddings[0] + 2));
-        let right = format!("{}{}{}", c_mid, "-".repeat(self.paddings[self.column_count - 1] + 2), c_end);
+        let left = format!("{}{}", c_start, "—".repeat(self.paddings[0] + 2));
+        let right = format!("{}{}{}", c_mid, "—".repeat(self.paddings[self.column_count - 1] + 2), c_end);
 
         pieces.push(left);
         for i in 1..self.column_count - 1 {
-            pieces.push(format!("{}{}", c_mid, "-".repeat(self.paddings[i] + 2)));
+            pieces.push(format!("{}{}", c_mid, "—".repeat(self.paddings[i] + 2)));
         }
         pieces.push(right);
 

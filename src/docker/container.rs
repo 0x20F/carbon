@@ -14,7 +14,9 @@ pub struct Container {
     #[serde(rename = "NetworkSettings")]
     pub settings: NetworkSettings,
 
-    pub state: State 
+    pub state: State,
+    pub config: Config,
+    pub platform: String
 }
 
 impl Container {
@@ -45,6 +47,12 @@ pub struct State {
     status: String
 }
 
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "PascalCase")]
+pub struct Config {
+    image: String,
+}
+
 
 
 
@@ -71,9 +79,9 @@ pub fn all() -> Vec<Container> {
 
 pub fn show_all() {
     let containers = all();
-    let mut table = Table::new(3, vec![]);
+    let mut table = Table::new(5, vec![]);
 
-    table.header(vec![ "Name", "Network", "Status" ]);
+    table.header(vec![ "Name", "Networks", "Status", "Image", "Platform" ]);
 
     for container in containers {
         let color = match container.state.status.as_str() {
@@ -84,10 +92,20 @@ pub fn show_all() {
         };
         let networks = container.settings.networks.keys().map(|s| &**s).collect::<Vec<_>>();
     
+        // If the image is longer than 20 characters, show a shortened version of it
+        let image = if container.config.image.len() > 10 {
+            format!("{}...", &container.config.image[0..10])
+        } else {
+            container.config.image.to_string()
+        };
+
+
         table.row(vec![
             &format!("<{}>{}</>", color, container.name()),
             &format!("<{}>{}</>", color, networks.join(", ")),
-            &format!("<{}>{}</>", color, container.state.status)
+            &format!("<{}>{}</>", color, container.state.status),
+            &format!("<{}>{}</>", color, image),
+            &format!("<{}>{}</>", color, container.platform)
         ]);
     }
 

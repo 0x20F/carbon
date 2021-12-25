@@ -4,6 +4,8 @@ use crate::docker;
 
 
 
+/// Handler function for every parameter
+/// and subcommand of the `network` command.
 pub fn handle(matches: &ArgMatches) -> Result<()> {
     if let Some(matches) = matches.subcommand_matches("network") {
         if let Some(matches) = matches.subcommand_matches("create") {
@@ -26,7 +28,6 @@ pub fn handle(matches: &ArgMatches) -> Result<()> {
             docker::network::connect(&network, &containers)?;
         }
 
-        // Handle disconnect
         if let Some(matches) = matches.subcommand_matches("disconnect") {
             let network: String = matches.value_of("network").unwrap().to_string();
             let containers: Vec<_> = matches.values_of("container").unwrap().collect();

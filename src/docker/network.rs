@@ -7,14 +7,21 @@ use crate::util::table::Table;
 
 
 
-
+/// Code representation of the values we want
+/// serde to retrieve from the massive JSON that
+/// docker yields when inspecting a network
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "PascalCase")]
 pub struct Network {
+    /// The name of the network
     name: String,
+
+    /// All the containers that are currently connected to the network
+    /// if any...
     containers: Option<HashMap<String, Container>>,
 }
 
+/// Brief info about all the containers connected to the network
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "PascalCase")]
 pub struct Container {
@@ -24,7 +31,7 @@ pub struct Container {
 
 
 
-
+/// Given a name, create a new network with it.
 pub fn create(name: &str) -> Result<()> {
     let output = Command::new("docker")
         .arg("network")
@@ -38,6 +45,7 @@ pub fn create(name: &str) -> Result<()> {
 
 
 
+/// Given a name, remove any network that has that name
 pub fn remove(name: &str) -> Result<()> {
     let output = Command::new("docker")
         .arg("network")
@@ -51,6 +59,54 @@ pub fn remove(name: &str) -> Result<()> {
 
 
 
+/// Given a network name and a list of container names,
+/// connect all the containers to the network.
+pub fn connect(network: &str, container_names: &[&str]) -> Result<()> {
+    run_if_container(
+        container_names,
+        |container| {
+            Command::new("docker")
+                .arg("network")
+                .arg("connect")
+                .arg(network)
+                .arg(container.name())
+                .output()
+                .expect("Something went wrong when connecting to the network");
+
+            // TODO: Report container being already connected?
+
+            success!("Container <cyan>{}</> connected to the network <magenta>{}</>", container.name(), network);
+        }
+    )
+}
+
+
+
+/// Given a network name and a list of container names,
+/// disconnect all the containers from the network.
+pub fn disconnect(network: &str, container_names: &[&str]) -> Result<()> {
+    run_if_container(
+        container_names,
+        |container| {
+            Command::new("docker")
+                .arg("network")
+                .arg("disconnect")
+                .arg(network)
+                .arg(container.name())
+                .output()
+                .expect("Something went wrong when disconnecting from the network");
+
+            // TODO: Report container not being part of the network?
+
+            success!("Container <cyan>{}</> disconnected from the network <magenta>{}</>", container.name(), network);
+        }
+    )
+}
+
+
+
+/// Show all information we saved about all the networks
+/// in a nicely colored and formatted table;
 pub fn show_all() {
     let output = Command::new("docker")
         .arg("network")
@@ -95,47 +151,9 @@ pub fn show_all() {
 }
 
 
-pub fn connect(network: &str, container_names: &[&str]) -> Result<()> {
-    run_if_container(
-        container_names,
-        |container| {
-            Command::new("docker")
-                .arg("network")
-                .arg("connect")
-                .arg(network)
-                .arg(container.name())
-                .output()
-                .expect("Something went wrong when connecting to the network");
 
-            // TODO: Report container being already connected?
-
-            success!("Container <cyan>{}</> connected to the network <magenta>{}</>", container.name(), network);
-        }
-    )
-}
-
-
-pub fn disconnect(network: &str, container_names: &[&str]) -> Result<()> {
-    run_if_container(
-        container_names,
-        |container| {
-            Command::new("docker")
-                .arg("network")
-                .arg("disconnect")
-                .arg(network)
-                .arg(container.name())
-                .output()
-                .expect("Something went wrong when disconnecting from the network");
-
-            // TODO: Report container not being part of the network?
-
-            success!("Container <cyan>{}</> disconnected from the network <magenta>{}</>", container.name(), network);
-        }
-    )
-}
-
-
-
+/// Helper function to run a closure if the container
+/// is found in the list of all available containers
 fn run_if_container<F>(to_match: &[&str], f: F) -> Result<()>
     where F: Fn(&super::container::Container) 
 {
@@ -167,6 +185,9 @@ fn run_if_container<F>(to_match: &[&str], f: F) -> Result<()>
 
 
 
+/// Given a list of network names, ask the docker API
+/// for the JSON representation of each network and convert
+/// it to a list of Network structs that we can use.
 fn inspect(networks: &Vec<&str>) -> Vec<Network> {
     let mut command = Command::new("docker");
     

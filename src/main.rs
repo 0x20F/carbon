@@ -12,181 +12,38 @@ mod handlers;
 mod docker;
 mod file;
 mod config;
+mod app;
 
 pub use util::error;
 pub use util::macros;
 
-use clap::{ Arg, App, SubCommand, ArgMatches };
+use clap::ArgMatches;
+
 
 
 
 fn main() {
     let footprint = config::Footprint::get();
 
+    // If there is an active config file, load it.
+    // If not, try loading one from the current directory.
     match footprint.get_current_env() {
-        // Take from the predefined path if provided
         Some(path) => { dotenv::from_path(path).ok(); },
-
-        // Otherwise take from the current running directory
         None => { dotenv::dotenv().ok(); },
     }
-
-
-    let matches = App::new("carbon")
-        .version("1.0")
-        .author("0x20F")
-        .about("Container build tool")
-        .subcommand(SubCommand::with_name("env")
-                        .about("Manage dotenv files")
-                        .alias("e")
-                        .subcommand(SubCommand::with_name("add")
-                                        .alias("mk")
-                                        .about("Add a new dotenv file path")
-                                        .arg(Arg::with_name("path")
-                                                .help("Path to the dotenv file")
-                                                .required(true)
-                                                .index(1)
-                                        )
-                                        .arg(Arg::with_name("identifier")
-                                                .help("Identifier for the dotenv file")
-                                                .required(true)
-                                                .index(2)
-                                        )
-                                    )
-                        .subcommand(SubCommand::with_name("list")
-                                        .alias("ls")
-                                        .about("List all dotenv files")
-                                    )
-                        .subcommand(SubCommand::with_name("remove")
-                                        .alias("rm")
-                                        .about("Remove a dotenv file path")
-                                        .arg(Arg::with_name("identifier")
-                                                .help("The ID of the path you want to remove")
-                                                .required(true)
-                                                .index(1)
-                                            )
-                                    )
-                        .subcommand(SubCommand::with_name("activate")
-                                        .alias("a")
-                                        .about("Set a dotenv file as active")
-                                        .arg(Arg::with_name("identifier")
-                                                .help("The ID of the path you want to activate")
-                                                .required(true)
-                                                .index(1)
-                                            )
-                                    )
-                    )
-        .subcommand(SubCommand::with_name("service")
-                        .alias("s")
-                        .about("Manage services")
-                        .subcommand(SubCommand::with_name("start")
-                            .alias("s")
-                            .about("Start a service")
-                            .arg(Arg::with_name("services")
-                                .help("Services to start")
-                                .required(true)
-                                .multiple(true)
-                                .index(1))
-                            .arg(Arg::with_name("display")
-                                .short("d")
-                                .long("display")
-                                .help("Display the compose file"))
-                        )
-                        .subcommand(SubCommand::with_name("stop")
-                            .alias("p")
-                            .about("Stop a service")
-                            .arg(Arg::with_name("services")
-                                .help("Services to stop")
-                                .required(true)
-                                .multiple(true)
-                                .index(1))
-                        )
-                        .subcommand(SubCommand::with_name("list")
-                            .alias("ls")
-                            .about("List all services")
-                        )
-                        .subcommand(SubCommand::with_name("rebuild")
-                            .alias("rb")
-                            .about("Rebuild a service")
-                            .arg(Arg::with_name("services")
-                                .help("Services to rebuild")
-                                .required(true)
-                                .multiple(true)
-                                .index(1))
-                        )
-                    )
-        .subcommand(SubCommand::with_name("network")
-                        .alias("n")
-                        .about("Perform actions on docker networks")
-                        .version("1.0")
-                        .author("0x20F")
-                        .subcommand(SubCommand::with_name("create")
-                                        .alias("mk")
-                                        .about("Create a new docker network")
-                                        .version("1.0")
-                                        .author("0x20F")
-                                        .arg(Arg::with_name("name")
-                                                .help("The name of the network")
-                                                .required(true)
-                                                .index(1))
-                                    )
-                        .subcommand(SubCommand::with_name("remove")
-                                        .alias("rm")
-                                        .about("Remove a docker network")
-                                        .version("1.0")
-                                        .author("0x20F")
-                                        .arg(Arg::with_name("name")
-                                                .help("The name of the network")
-                                                .required(true)
-                                                .index(1))
-                                    )
-                        .subcommand(SubCommand::with_name("list")
-                                        .alias("ls")
-                                        .about("List all docker networks")
-                                        .version("1.0")
-                                        .author("0x20F")
-                                    )
-                        .subcommand(SubCommand::with_name("connect")
-                                        .alias("c")
-                                        .about("Connect a container to a network")
-                                        .version("1.0")
-                                        .author("0x20F")
-                                        .arg(Arg::with_name("network")
-                                                .help("The name of the network")
-                                                .required(true)
-                                                .index(1))
-                                        .arg(Arg::with_name("container")
-                                                .help("The name/names of all containers that should connect to the network")
-                                                .required(true)
-                                                .index(2)
-                                                .min_values(1))
-                                    )
-                        .subcommand(SubCommand::with_name("disconnect")
-                                        .alias("dc")
-                                        .about("Disconnect a container from a network")
-                                        .version("1.0")
-                                        .author("0x20F")
-                                        .arg(Arg::with_name("network")
-                                                .help("The name of the network")
-                                                .required(true)
-                                                .index(1))
-                                        .arg(Arg::with_name("container")
-                                                .help("The name/names of all containers that should disconnect from the network")
-                                                .required(true)
-                                                .index(2)
-                                                .min_values(1))
-                                    )
-                    )
-        .get_matches();
     
 
-    match execute(&matches) {
+    // If something breaks, print the error and exit
+    match execute(&app::start()) {
         Err(e) => error!("{}", e),
         _ => ()
     }
 }
 
 
+/// Wrapper around all the actions that the handlers
+/// execute so that we can nicely catch all the errors
+/// here and print them out.
 pub fn execute(matches: &ArgMatches) -> error::Result<()> {
     handlers::services::handle(matches)?;
     handlers::network::handle(matches)?;

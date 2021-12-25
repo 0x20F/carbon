@@ -16,8 +16,15 @@ pub struct Dotenv {
     id: String,
 }
 
+
+/// The actual "configuration" file for the program
+/// Although not written by the user, this is where
+/// carbon keeps track of all the things a user
+/// has defined.
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Footprint {
+    /// The list of .env files that the user has defined
+    /// and whether or not they're active
     dotenv: HashMap<String, Dotenv>
 }
 
@@ -30,6 +37,8 @@ impl Default for Footprint {
 }
 
 impl Footprint {
+    /// Try to load the footprint database from disk if
+    /// it exists. If it doesn't exist, create a new one
     pub fn get() -> Self {
         let expanded = shellexpand::full(CONFIG_PATH).unwrap().to_string();
 
@@ -41,6 +50,7 @@ impl Footprint {
     }
 
 
+    /// Write the footprint database to disk
     pub fn save(config: &Self) -> Result<()> {
         let expanded = shellexpand::full(CONFIG_PATH).unwrap().to_string();
         let content = toml::to_string(config).unwrap();
@@ -51,8 +61,9 @@ impl Footprint {
     }
 
 
+    /// Get the list of .env files that the user has defined
+    /// and find the one that is active. If there is one.
     pub fn get_current_env(&self) -> Option<String> {
-        // Loop through all dotenv files and return the path of the one that's active
         for (path, info) in &self.dotenv {
             if info.active {
                 return Some(path.to_string());
@@ -63,6 +74,9 @@ impl Footprint {
     }
 
 
+    /// Add a new .env file to the list of .env files.
+    /// Making sure to update the contents if it already exists
+    /// and to set the newly added file as active
     pub fn add_env_file(&mut self, path: &str, id: &str) {
         self.disable_all_files();
 
@@ -97,6 +111,7 @@ impl Footprint {
     }
 
 
+    /// Activate a .env file with the given ID
     pub fn activate_env_file(&mut self, id: &str) {
         self.disable_all_files();
 
@@ -108,6 +123,7 @@ impl Footprint {
     }
 
 
+    /// Remove the .env file with the given ID
     pub fn remove_env_file(&mut self, id: &str) {
         let mut to_remove = vec![];
 
@@ -123,6 +139,8 @@ impl Footprint {
     }
 
 
+    /// Print the list of .env files that the user has defined
+    /// as a nicely colored and formatted table.
     pub fn print_as_table(&self) {
         let mut table = Table::new(
             3, 
@@ -130,12 +148,6 @@ impl Footprint {
         );
 
         table.header(vec!["ID", "Path", "Active"]);
-
-        // Only print a footer if no entries defined
-        if self.dotenv.is_empty() {
-            table.footer("No entries defined");
-            return;
-        }
         
         for (k, info) in self.dotenv.iter() {
             let enabled = if info.active { "<bright-green>1</>" } else { "0" };
@@ -157,6 +169,7 @@ impl Footprint {
     }
 
 
+    /// Disable all .env files
     fn disable_all_files(&mut self) {
         for (_, info) in self.dotenv.iter_mut() {
             info.active = false;

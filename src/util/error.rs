@@ -1,25 +1,52 @@
 use std::fmt;
 
 
-
+/// Wrapper type to simplify specifying what error we're throwing
 pub type Result<T> = std::result::Result<T, CarbonError>;
 
 
+/// Enum representing all the possible errors that can be thrown
+/// by Carbon. Most of them accept a string as a parameter, which
+/// is usually a piece that goes into the error message, not the
+/// entire message itself.
 pub enum CarbonError {
+    /// Given service name doesn't exist in the active environment
     ServiceNotDefined(String),
+
+    /// Given service name is not a running service
     ServiceNotRunning(String),
+
+    /// Given service name is already running
     ServiceAlreadyRunning(String),
     
+    /// Variable not defined in active environment
     UndefinedEnvVar(String, String),
+
+    /// There is no active environment
+    NoActiveEnv,
     
+    /// There was an error reading a file
     FileReadError(String),
+
+    /// There was an error writing a file
     FileWriteError(String),
 
+    /// Failed starting a docker service
     DockerServiceStartup(String),
+
+    /// Failed stopping a docker service
     DockerServiceShutdown(String),
+
+    /// Failed creating a docker network
     DockerNetworkCreate(String),
+
+    /// Failed removing a docker network
     DockerNetworkRemove(String),
+
+    /// Failed inspecting a docker network
     DockerNetworkInspect(String),
+
+    /// Failed connecting to a docker network
     DockerNetworkConnect(String),
 }
 
@@ -34,6 +61,7 @@ impl fmt::Display for CarbonError {
             ServiceAlreadyRunning(s) => format!("The <cyan>service <magenta>{}</> is already running, aborting...\n  <bright-green>Try stopping it first.</>", s),
             
             UndefinedEnvVar(s, p) => format!("The <b><yellow>{}</> environment <cyan>variable</> isn't defined in the provided dotenv file: <magenta>{}</>", s, p),
+            NoActiveEnv => format!("No active environment file found, aborting..."),
             
             FileReadError(s) => format!("Couldn't read <cyan>service file</>: <magenta>{}</>", s),
             FileWriteError(s) => format!("Couldn't write new <cyan>composed service file</>: <magenta>{}</>", s),

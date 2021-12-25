@@ -7,7 +7,8 @@ use crate::error::Result;
 use crate::docker;
 
 
-
+/// Handler function for every parameter
+/// and subcommand of the `service` command.
 pub fn handle(matches: &ArgMatches) -> Result<()> {
     if let Some(service_matches) = matches.subcommand_matches("service") {
         let mut service_handler = Service::new();

@@ -7,17 +7,23 @@ use paris::Logger;
 use std::collections::HashMap;
 
 
-
+/// The filename standards for all the files that
+/// every service should use to describe themselves.
 static SERVICE_FILE: &'static str = "carbon.yml";
 static COMPOSE_FILE_FORMAT: &'static str = "yml";
 
 
 
+/// Handler struct to take care of setting up and
+/// taking down all the services based on their defined
+/// configuration files.
 pub struct Service<'p> {
+    /// Paris logger since we want loading spinners.
     logger: Logger<'p>
 }
 
 impl<'p> Service<'p> {
+    /// Create a new service handler
     pub fn new() -> Self {
         Self {
             logger: Logger::new()
@@ -25,14 +31,17 @@ impl<'p> Service<'p> {
     }
 
 
+    /// Given a list of services, if none of the services are
+    /// already running, attempt to load their configuration files
+    /// based on the active .env file and start them according to that.
     pub fn start<'a>(&mut self, services: Vec<&'a str>, display: bool) -> Result<()> {
         let environment = environment::get_root_directory()?;
         let mut carbon_conf = Emissions::get();
         let mut configs = vec![];
 
         // Check if any of the provided services are already running
+        // if they are we don't continue.
         for service in services.iter() {
-            // If they are, we don't continue
             let values = carbon_conf.get_running_services().values();
 
             for value in values {
@@ -51,7 +60,7 @@ impl<'p> Service<'p> {
 
         self.logger.info("Building docker-compose file for all services to live in...");
 
-        let compose = docker::build_compose_file(&configs);
+        let compose = docker::compose::build_compose_file(&configs);
         let cleaned = environment::parse_variables(&compose)?;
         let temp_path = file::write_tmp(COMPOSE_FILE_FORMAT, &cleaned)?;
 
@@ -62,7 +71,7 @@ impl<'p> Service<'p> {
             println!("{}", cleaned);
         }
 
-        docker::start_service_setup(&temp_path)?;
+        docker::compose::start_service_setup(&temp_path)?;
         self.logger.success("Services should be up!");
 
         carbon_conf.add_running_service(&temp_path, services);
@@ -71,6 +80,9 @@ impl<'p> Service<'p> {
     }
 
 
+    /// Given a list of services, attempt to stop them by carefully
+    /// matching them with their individual docker compose files.
+    /// Not running in the global scope with `docker container stop <name>` 
     pub fn stop<'a>(&mut self, services: Vec<&'a str>) -> Result<()> {
         let mut config = Emissions::get();
         let mut to_stop: HashMap<String, Vec<String>> = HashMap::new();
@@ -104,7 +116,7 @@ impl<'p> Service<'p> {
                     compose_file
                 )
             );
-            docker::stop_service_container(&containers, &compose_file)?;
+            docker::compose::stop_service_container(&containers, &compose_file)?;
         }
         self.logger.success("Stopped all required services");
 
@@ -117,6 +129,11 @@ impl<'p> Service<'p> {
     }
 
 
+
+    /// Given a list of services, find out which docker-compose
+    /// file they belong to and stop them. Then rebuild them from
+    /// that exact compose file so they spawn inside the same network
+    /// they were previously in, but with updated images and whatnot.
     pub fn rebuild<'a>(&mut self, services: Vec<&'a str>) -> Result<()> {
         let config = Emissions::get();
 
@@ -131,7 +148,7 @@ impl<'p> Service<'p> {
                 docker::container::stop(s);
 
                 self.logger.info(format!("Rebuilding service: <bright-green>{}</> in (<magenta>{}</>)", s, compose_file));
-                docker::rebuild_specific_service_setup(s, &compose_file)?;
+                docker::compose::rebuild_specific_service_setup(s, &compose_file)?;
 
                 // Only need to run once since docker doesn't allow
                 // multiple containers to have the same name
@@ -143,6 +160,11 @@ impl<'p> Service<'p> {
     }
 
 
+
+    /// Helper function to figure out if a key already
+    /// exists within a hashmap and if it does, push the
+    /// value onto the vector, otherwise create a new
+    /// vector and push the value onto it.
     fn push_or_init(map: &mut HashMap<String, Vec<String>>, key: &str, value: String) {
         if let Some(x) = map.get_mut(key) {
             x.push(value);

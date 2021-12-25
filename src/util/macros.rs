@@ -1,3 +1,6 @@
+/// Helper macro to unwrap a std::process::Command output
+/// into a string or throwing an error if the command wrote
+/// to stderr.
 macro_rules! unwrap_stderr {
     ( $output: expr, $enum_type: ident ) => {
         if !$output.status.success() {

@@ -5,28 +5,42 @@ use crate::util::table::Table;
 
 
 
-
+/// Code representation of the values we want
+/// serde to retrieve from the massive JSON that
+/// docker yields when inspecting a container
+/// with `docker inspect container <name>`
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "PascalCase")]
 pub struct Container {
+    /// The name of the container
     name: String,
 
+    /// Network settings for the container
     #[serde(rename = "NetworkSettings")]
     pub settings: NetworkSettings,
 
+    /// Current container state
     pub state: State,
+
+    /// Current container configuration
     pub config: Config,
+
+    /// Current container platform
     pub platform: String
 }
 
 impl Container {
+    /// Get the name of the container.
+    /// This is the only getter method since docker
+    /// adds a / to the container name and it needs
+    /// to be removed since they're not actually called by that name.
     pub fn name(&self) -> &str {
-        // Remove the leading slash that docker adds
         &self.name[1..]
     }
 }
 
 
+/// Network settings for the container
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "PascalCase")]
 pub struct NetworkSettings {
@@ -34,6 +48,8 @@ pub struct NetworkSettings {
 }
 
 
+/// Individual network spec for a network that a
+/// container is connected to
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "PascalCase")]
 pub struct Network {
@@ -41,12 +57,15 @@ pub struct Network {
 }
 
 
+/// Current container state
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "PascalCase")]
 pub struct State {
     status: String
 }
 
+
+/// Current container configuration
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "PascalCase")]
 pub struct Config {
@@ -56,6 +75,9 @@ pub struct Config {
 
 
 
+/// Get all the containers that are available on
+/// the current system and convert them from JSON
+/// to a more usable format.
 pub fn all() -> Vec<Container> {
     let output = Command::new("docker")
         .arg("container")
@@ -77,6 +99,9 @@ pub fn all() -> Vec<Container> {
 
 
 
+/// Get all the containers that are available on
+/// the current system and display them in a nicely
+/// colored and formatted table.
 pub fn show_all() {
     let containers = all();
     let mut table = Table::new(5, vec![]);
@@ -92,7 +117,7 @@ pub fn show_all() {
         };
         let networks = container.settings.networks.keys().map(|s| &**s).collect::<Vec<_>>();
     
-        // If the image is longer than 20 characters, show a shortened version of it
+        // If the image name is longer than 20 characters, show a shortened version of it
         let image = if container.config.image.len() > 10 {
             format!("{}...", &container.config.image[0..10])
         } else {
@@ -114,6 +139,7 @@ pub fn show_all() {
 
 
 
+/// Stop a specific container by name
 pub fn stop(container: &str) {
     Command::new("docker")
         .arg("container")
@@ -125,6 +151,9 @@ pub fn stop(container: &str) {
 
 
 
+/// Inspect multiple containers and return a vector of
+/// Deserialized structs that can be used throughout the
+/// application.
 fn inspect(containers: &[&str]) -> Vec<Container> {
     let mut command = Command::new("docker");
 

@@ -17,7 +17,6 @@ pub use util::error;
 pub use util::macros;
 
 use clap::{ Arg, App, SubCommand, ArgMatches };
-use dotenv::dotenv;
 
 
 

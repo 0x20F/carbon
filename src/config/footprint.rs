@@ -100,7 +100,7 @@ impl Footprint {
     pub fn activate_env_file(&mut self, id: &str) {
         self.disable_all_files();
 
-        for (path, info) in self.dotenv.iter_mut() {
+        for (_, info) in self.dotenv.iter_mut() {
             if info.id == id {
                 info.active = true;
             }

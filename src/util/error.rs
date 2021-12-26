@@ -48,6 +48,9 @@ pub enum CarbonError {
 
     /// Failed connecting to a docker network
     DockerNetworkConnect(String),
+
+    /// General docker error
+    Docker(String)
 }
 
 
@@ -72,6 +75,7 @@ impl fmt::Display for CarbonError {
             DockerNetworkRemove(stderr) => format!("Couldn't remove network! <cyan>Docker info below:</>\n{}", stderr),
             DockerNetworkInspect(stderr) => format!("Couldn't inspect network! <cyan>Docker info below:</>\n{}", stderr),
             DockerNetworkConnect(stderr) => format!("Couldn't connect containers to network! <cyan>Docker info below:</>\n{}", stderr),
+            Docker(stderr) => format!("<cyan>Docker error</>: {}", stderr)
         };
 
         write!(f, "{}", string)

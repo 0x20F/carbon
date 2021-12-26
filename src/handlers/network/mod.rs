@@ -7,9 +7,9 @@ use crate::docker;
 /// Handler function for every parameter
 /// and subcommand of the `network` command.
 pub fn handle(matches: &ArgMatches) -> Result<()> {
-    let _ = docker::running()?;
-
     if let Some(matches) = matches.subcommand_matches("network") {
+        let _ = docker::running()?;
+        
         if let Some(matches) = matches.subcommand_matches("create") {
             let name: String = matches.value_of("name").unwrap().to_string();
             docker::network::create(&name)?;

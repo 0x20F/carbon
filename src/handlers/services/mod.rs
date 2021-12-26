@@ -10,9 +10,8 @@ use crate::docker;
 /// Handler function for every parameter
 /// and subcommand of the `service` command.
 pub fn handle(matches: &ArgMatches) -> Result<()> {
-    let _ = docker::running()?;
-
     if let Some(service_matches) = matches.subcommand_matches("service") {
+        let _ = docker::running()?;
         let mut service_handler = Service::new();
     
         if let Some(start_matches) = service_matches.subcommand_matches("start") {

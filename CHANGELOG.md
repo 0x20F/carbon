@@ -6,12 +6,16 @@ All notable changes to this project will be documented in this file.
 ### Bug Fixes
 
 - Use the longer dashes in spacers
+- Check docker status if command needs to actually run
+- Improve handler readability. Less indentation is good.
+- Separate giant manifest into multiple smaller modules
 
 ### Features
 
 - New command 'add' for starting + adding the started containers to an already existing network
 - Add logo
 - Add guards to not start command execution if daemon isn't running
+- Different configurations for both development and production through isotope files
 
 ## [1.0.0] - 2021-12-25
 

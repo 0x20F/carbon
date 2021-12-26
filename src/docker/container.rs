@@ -117,16 +117,22 @@ pub fn show_all() {
         };
         let networks = container.settings.networks.keys().map(|s| &**s).collect::<Vec<_>>();
     
-        // If the image name is longer than 20 characters, show a shortened version of it
         let image = if container.config.image.len() > 10 {
             format!("{}...", &container.config.image[0..10])
         } else {
             container.config.image.to_string()
         };
 
+        // If the container name is longer than 20 characters, show a shortened version of it
+        let name = if container.name().len() > 20 {
+            format!("{}...", &container.name()[0..20])
+        } else {
+            container.name().to_string()
+        };
+
 
         table.row(vec![
-            &format!("<{}>{}</>", color, container.name()),
+            &format!("<{}>{}</>", color, name),
             &format!("<{}>{}</>", color, networks.join(", ")),
             &format!("<{}>{}</>", color, container.state.status),
             &format!("<{}>{}</>", color, image),

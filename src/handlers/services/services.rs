@@ -10,6 +10,7 @@ use std::collections::HashMap;
 /// The filename standards for all the files that
 /// every service should use to describe themselves.
 static SERVICE_FILE: &'static str = "carbon.yml";
+static SERVICE_FILE_ISOTOPE: &'static str = "carbon-isotope.yml";
 static COMPOSE_FILE_FORMAT: &'static str = "yml";
 
 
@@ -34,10 +35,16 @@ impl<'p> Service<'p> {
     /// Given a list of services, if none of the services are
     /// already running, attempt to load their configuration files
     /// based on the active .env file and start them according to that.
-    pub fn start<'a>(&mut self, services: Vec<&'a str>, display: bool) -> Result<()> {
-        let environment = environment::get_root_directory()?;
+    pub fn start<'a>(&mut self, services: Vec<&'a str>, display: bool, isotope: bool) -> Result<()> {
         let mut carbon_conf = Emissions::get();
         let mut configs = vec![];
+        let environment = environment::get_root_directory()?;
+        let service_file = if isotope {
+            self.logger.info("Loading isotope services..."); 
+            SERVICE_FILE_ISOTOPE 
+        } else {
+            SERVICE_FILE 
+        };
 
         // Check if any of the provided services are already running
         // if they are we don't continue.
@@ -54,7 +61,7 @@ impl<'p> Service<'p> {
         self.logger.info("Gathering individual service configurations...");
 
         for service in services.iter() {
-            let path = format!("{}/{}/{}", environment, service, SERVICE_FILE);
+            let path = format!("{}/{}/{}", environment, service, service_file);
             configs.push(file::get_contents(&path)?);
         }
 

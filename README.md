@@ -74,10 +74,12 @@ Docker things that carbon does as well, sometimes better.
 <br/>
 
 ### Installing
-Installation is done through `cargo` for now since it does the job for my needs.
+1. Installation is done through `cargo` for now since it does the job for my needs.
 ```bash
 cargo install carbon-cli
 ```
+2. Also add an alias for your shell since it'll be called `carbon-cli` otherwise. Just `carbon` was taken, nothing I can do about that.
+
 Just make sure you have a `.local` directory in your **home** folder. That's where Carbon will keep track of all the settings you choose while using it (in a file called `carbon-footprint.yml`)
 
 <br/>

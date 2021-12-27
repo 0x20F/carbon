@@ -78,7 +78,7 @@ Installation is done through `cargo` for now since it does the job for my needs.
 ```bash
 cargo install carbon-cli
 ```
-Just make sure you have a `.local` directory in your **home** folder. That's where Carbon will keep track of all the settings you choose while using it.
+Just make sure you have a `.local` directory in your **home** folder. That's where Carbon will keep track of all the settings you choose while using it (in a file called `carbon-footprint.yml`)
 
 <br/>
 

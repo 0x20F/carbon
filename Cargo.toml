@@ -1,6 +1,6 @@
 [package]
 name = "carbon-cli"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 
 documentation = "https://github.com/4khara/carbon"
@@ -16,8 +16,7 @@ description = "Docker abstraction layer with added flair"
 license = "MPL-2.0"
 
 exclude = [
-    "tests/*",
-    ".github/*"
+    "tests/*"
 ]
 
 [badge]

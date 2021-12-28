@@ -21,6 +21,17 @@ pub fn get_root_directory() -> Result<String> {
 }
 
 
+/// Get the directory of the .env file that's currently in use
+pub fn current_env_path() -> Result<String> {
+    let config = Footprint::get();
+
+    match config.get_current_env() {
+        Some(s) => Ok(s),
+        None => Err(CarbonError::NoActiveEnv)
+    }
+}
+
+
 /// Replace environment variables found
 /// within each service configuration file with custom values
 /// provided by carbon.

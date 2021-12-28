@@ -98,8 +98,12 @@ fn merge_compose_file(services: &str) -> String {
 /// Given a docker compose file, start all the services 
 /// within it and bubble up any errors that may arise.
 pub fn start_service_setup(configuration: &str) -> Result<()> {
+    let current_env = util::environment::current_env_path()?;
+
     let output = Command::new("docker")
                     .arg("compose")
+                    .arg("--env-file")
+                    .arg(current_env)
                     .arg("--file")
                     .arg(configuration)
                     .arg("up")
@@ -115,8 +119,12 @@ pub fn start_service_setup(configuration: &str) -> Result<()> {
 /// do a hard start and rebuild everything about that service while keeping
 /// it within the same compose file it was in before.
 pub fn rebuild_specific_service_setup(name: &str, configuration: &str) -> Result<()> {
+    let current_env = util::environment::current_env_path()?;
+
     let output = Command::new("docker")
                     .arg("compose")
+                    .arg("--env-file")
+                    .arg(current_env)
                     .arg("--file")
                     .arg(configuration)
                     .arg("up")

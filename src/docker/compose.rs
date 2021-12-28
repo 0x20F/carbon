@@ -45,7 +45,7 @@ pub fn build_compose_file(services: &Vec<&str>, carbon_conf: &str) -> Result<Str
 
                         // Generate a container name if the container doesn't already have one
                         if let serde_yaml::Value::Null = v[service]["container_name"] {
-                            let name = format!("{}-{}-{}", service, util::generators::random_string(10), util::generators::random_string(10));
+                            let name = format!("{}", service);
                             v[service]["container_name"] = name.into();
                         }
 

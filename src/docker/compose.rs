@@ -39,7 +39,7 @@ pub fn build_compose_file(services: &Vec<&str>, carbon_conf: &str) -> Result<Str
                 let mut v: serde_yaml::Value = serde_yaml::from_str(doc).unwrap();
 
                 match v[service] {
-                    serde_yaml::Value::Null => println!("Service not defined"),
+                    serde_yaml::Value::Null => (),
                     _ => {
                         found = true;
 

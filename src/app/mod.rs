@@ -12,7 +12,7 @@ use clap::{ App, ArgMatches };
 /// CLI interface. (subcommands, arguments, etc.)
 pub fn start() -> ArgMatches<'static> {
     App::new("carbon")
-        .version("1.0")
+        .version("1.2")
         .author("0x20F")
         .about("Container build tool")
         .subcommand(env::component())

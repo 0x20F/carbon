@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- Stop container with specific compose file in mind
+
+### Features
+
+- Service names aren't dependent on directory names anymore
+- Pass the currently active .env file to all docker services being created
+- Add flag to  command to display all the services that carbon can actually create, opposed to the original command that shows all available docker containers
+
+## [1.1.1] - 2021-12-27
+
+### Bug Fixes
+
+- Set a limit to how long container names can be in the printed table
+
+### Features
+
+- Actual documentation
+
+## [1.1.0] - 2021-12-26
+
+### Bug Fixes
+
 - Use the longer dashes in spacers
 - Check docker status if command needs to actually run
 - Improve handler readability. Less indentation is good.

@@ -37,7 +37,6 @@ impl<'p> Service<'p> {
     /// based on the active .env file and start them according to that.
     pub fn start<'a>(&mut self, services: Vec<&'a str>, display: bool, isotope: bool) -> Result<()> {
         let mut carbon_conf = Emissions::get();
-        let mut configs = vec![];
         let environment = environment::get_root_directory()?;
         let service_file = if isotope {
             self.logger.info("Loading isotope services..."); 
@@ -60,14 +59,10 @@ impl<'p> Service<'p> {
 
         self.logger.info("Gathering individual service configurations...");
 
-        for service in services.iter() {
-            let path = format!("{}/{}/{}", environment, service, service_file);
-            configs.push(file::get_contents(&path)?);
-        }
+        let compose = docker::compose::build_compose_file(&services, &service_file)?;
 
         self.logger.info("Building docker-compose file for all services to live in...");
 
-        let compose = docker::compose::build_compose_file(&configs);
         let cleaned = environment::parse_variables(&compose)?;
         let temp_path = file::write_tmp(COMPOSE_FILE_FORMAT, &cleaned)?;
 

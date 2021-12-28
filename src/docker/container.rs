@@ -145,18 +145,6 @@ pub fn show_all() {
 
 
 
-/// Stop a specific container by name
-pub fn stop(container: &str) {
-    Command::new("docker")
-        .arg("container")
-        .arg("stop")
-        .arg(container)
-        .output()
-        .expect("Something went wrong when stopping a container");
-}
-
-
-
 /// Inspect multiple containers and return a vector of
 /// Deserialized structs that can be used throughout the
 /// application.

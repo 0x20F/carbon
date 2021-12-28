@@ -152,7 +152,7 @@ impl<'p> Service<'p> {
                 }
 
                 self.logger.loading(format!("Stopping service <bright-green>{}</> in (<magenta>{}</>)", s, compose_file));
-                docker::container::stop(s);
+                docker::compose::stop_service_container(s, compose_file)?;
 
                 self.logger.info(format!("Rebuilding service: <bright-green>{}</> in (<magenta>{}</>)", s, compose_file));
                 docker::compose::rebuild_specific_service_setup(s, &compose_file)?;

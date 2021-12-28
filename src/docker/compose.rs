@@ -34,7 +34,7 @@ pub fn build_compose_file(services: &Vec<&str>, carbon_conf: &str) -> Result<Str
         if !path.is_dir() { continue; }
 
         let path = path.join(carbon_conf);
-        let contents = match file::get_contents(&path.display().to_string()) {
+        match file::get_contents(&path.display().to_string()) {
             Ok(contents) => configs.push(contents),
             Err(_) => continue,
         };

@@ -37,7 +37,6 @@ impl<'p> Service<'p> {
     /// based on the active .env file and start them according to that.
     pub fn start<'a>(&mut self, services: Vec<&'a str>, display: bool, isotope: bool) -> Result<()> {
         let mut carbon_conf = Emissions::get();
-        let environment = environment::get_root_directory()?;
         let service_file = if isotope {
             self.logger.info("Loading isotope services..."); 
             SERVICE_FILE_ISOTOPE 

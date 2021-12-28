@@ -4,7 +4,6 @@ use crate::macros::unwrap_stderr;
 use crate::util;
 use crate::file;
 use crate::util::table::Table;
-use yaml_rust::{ YamlLoader, Yaml, YamlEmitter };
 use std::{ str, fs };
 
 
@@ -21,8 +20,7 @@ services:
 /// files for each of the provided services into one file.
 /// Making sure to indent everything properly.
 pub fn build_compose_file(services: &Vec<&str>, carbon_conf: &str) -> Result<String> {
-    let mut output = String::new();
-    let mut emitter = YamlEmitter::new(&mut output);
+    let mut compose = vec![];
     let configs = find_carbon_services(carbon_conf)?;
 
 
@@ -33,14 +31,25 @@ pub fn build_compose_file(services: &Vec<&str>, carbon_conf: &str) -> Result<Str
         let mut found = false;
 
         for (_, config) in configs.iter() {
-            let docs = YamlLoader::load_from_str(config).unwrap();
+            // Split file into multiple documents 
+            let docs = config.split("\n---\n").collect::<Vec<&str>>();
 
+            // Check each document with serde
             for doc in docs.iter() {
-                match doc[*service] {
-                    Yaml::BadValue => (),
+                let mut v: serde_yaml::Value = serde_yaml::from_str(doc).unwrap();
+
+                match v[service] {
+                    serde_yaml::Value::Null => println!("Service not defined"),
                     _ => {
                         found = true;
-                        emitter.dump(&doc).unwrap();
+
+                        // Generate a container name if the container doesn't already have one
+                        if let serde_yaml::Value::Null = v[service]["container_name"] {
+                            let name = format!("{}-{}-{}", service, util::generators::random_string(10), util::generators::random_string(10));
+                            v[service]["container_name"] = name.into();
+                        }
+
+                        compose.push(serde_yaml::to_string(&v).unwrap());
                         break;
                     }
                 }
@@ -52,11 +61,9 @@ pub fn build_compose_file(services: &Vec<&str>, carbon_conf: &str) -> Result<Str
         }
     }
 
-    drop(emitter);
-
     // Cleanup the yaml output since the docker-compose file doesn't
     // need to contain multiple documents.
-    let output = output.replace("---", "");
+    let output = compose.join("\n").replace("---", "");
     Ok(merge_compose_file(&output))
 }
 

@@ -31,8 +31,14 @@ pub fn handle(matches: &ArgMatches) -> Result<()> {
         service_handler.stop(services)?;
     }
 
-    if let Some(_) = service_matches.subcommand_matches("list") {
-        docker::container::show_all();
+    if let Some(matches) = service_matches.subcommand_matches("list") {
+        let available = matches.is_present("available");
+
+        if !available {
+            docker::container::show_all();
+        } else {
+            docker::compose::show_available()?;
+        }
     }
 
     if let Some(rebuild_matches) = service_matches.subcommand_matches("rebuild") {

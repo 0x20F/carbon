@@ -22,8 +22,9 @@ pub fn handle(matches: &ArgMatches) -> Result<()> {
         let services: Vec<_> = start_matches.values_of("services").unwrap().collect();
         let display = start_matches.is_present("display");
         let isotope = start_matches.is_present("isotope");
+        let save = start_matches.value_of("save");
 
-        service_handler.start(services, display, isotope)?;
+        service_handler.start(services, display, isotope, save)?;
     }
     
     if let Some(stop_matches) = service_matches.subcommand_matches("stop") {
@@ -52,7 +53,7 @@ pub fn handle(matches: &ArgMatches) -> Result<()> {
         let isotope = add_matches.is_present("isotope");
 
         // Start services
-        service_handler.start(services.clone(), false, isotope)?;
+        service_handler.start(services.clone(), false, isotope, None)?;
 
         // Add them to the network
         docker::network::connect(&network, &services)?;

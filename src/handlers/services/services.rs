@@ -35,7 +35,7 @@ impl<'p> Service<'p> {
     /// Given a list of services, if none of the services are
     /// already running, attempt to load their configuration files
     /// based on the active .env file and start them according to that.
-    pub fn start<'a>(&mut self, services: Vec<&'a str>, display: bool, isotope: bool) -> Result<()> {
+    pub fn start<'a>(&mut self, services: Vec<&'a str>, display: bool, isotope: bool, save_path: Option<&str>) -> Result<()> {
         let mut carbon_conf = Emissions::get();
         let service_file = if isotope {
             self.logger.info("Loading isotope services..."); 
@@ -43,6 +43,20 @@ impl<'p> Service<'p> {
         } else {
             SERVICE_FILE 
         };
+
+        // Save the generated compose file if told to
+        if save_path.is_some() {
+            let compose = docker::compose::build_compose_file(&services, &service_file)?;
+
+            info!("Saving compose file to <bright-green>{}</>", save_path.unwrap());
+
+            file::save(
+                save_path.unwrap(), 
+                &compose, 
+            )?;
+
+            return Ok(());
+        }
 
         // Check if any of the provided services are already running
         // if they are we don't continue.

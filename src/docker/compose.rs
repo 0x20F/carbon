@@ -19,7 +19,7 @@ services:
 /// Build a new docker-compose file by combining all the carbon.yml
 /// files for each of the provided services into one file.
 /// Making sure to indent everything properly.
-pub fn build_compose_file(services: &Vec<&str>, carbon_conf: &str) -> Result<String> {
+pub fn build_compose_file(services: &Vec<&str>, carbon_conf: &str, clean: bool) -> Result<String> {
     let mut compose = vec![];
     let configs = find_carbon_services(carbon_conf)?;
 
@@ -45,8 +45,10 @@ pub fn build_compose_file(services: &Vec<&str>, carbon_conf: &str) -> Result<Str
 
                         // Generate a container name if the container doesn't already have one
                         if let serde_yaml::Value::Null = v[service]["container_name"] {
-                            let name = format!("{}", service);
-                            v[service]["container_name"] = name.into();
+                            if !clean {
+                                let name = format!("{}", service);
+                                v[service]["container_name"] = name.into();
+                            }
                         }
 
                         compose.push(serde_yaml::to_string(&v).unwrap());

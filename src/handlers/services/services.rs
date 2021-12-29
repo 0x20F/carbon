@@ -46,7 +46,7 @@ impl<'p> Service<'p> {
 
         // Save the generated compose file if told to
         if save_path.is_some() {
-            let compose = docker::compose::build_compose_file(&services, &service_file)?;
+            let compose = docker::compose::build_compose_file(&services, &service_file, true)?;
 
             info!("Saving compose file to <bright-green>{}</>", save_path.unwrap());
 
@@ -72,7 +72,7 @@ impl<'p> Service<'p> {
 
         self.logger.info("Gathering individual service configurations...");
 
-        let compose = docker::compose::build_compose_file(&services, &service_file)?;
+        let compose = docker::compose::build_compose_file(&services, &service_file, false)?;
 
         self.logger.info("Building docker-compose file for all services to live in...");
 

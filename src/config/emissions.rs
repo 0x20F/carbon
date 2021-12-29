@@ -66,12 +66,12 @@ impl Emissions {
 
 
     /// Add a new service to the running services list
-    pub fn add_running_service(&mut self, path: &str, services: Vec<&str>) {
+    pub fn add_running_service(&mut self, path: &str, services: &Vec<String>) {
         self.running.insert(
             path.to_string(),
             services
                 .iter()
-                .map(|s| String::from(*s))
+                .map(|s| String::from(s))
                 .collect()
         );
     }

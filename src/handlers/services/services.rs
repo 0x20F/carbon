@@ -37,7 +37,7 @@ impl<'p> Service<'p> {
     /// based on the active .env file and start them according to that.
     pub fn start<'a>(
         &mut self, 
-        services: Vec<&'a str>, 
+        services: &Vec<String>, 
         display: bool, 
         isotope: bool, 
         save_path: Option<&str>
@@ -94,7 +94,7 @@ impl<'p> Service<'p> {
         docker::compose::start_service_setup(&temp_path)?;
         self.logger.success("Services should be up!");
 
-        carbon_conf.add_running_service(&temp_path, services);
+        carbon_conf.add_running_service(&temp_path, &services);
         Emissions::save(&carbon_conf)?;
         Ok(())
     }
@@ -103,24 +103,33 @@ impl<'p> Service<'p> {
     /// Given a list of services, attempt to stop them by carefully
     /// matching them with their individual docker compose files.
     /// Not running in the global scope with `docker container stop <name>` 
-    pub fn stop<'a>(&mut self, services: Vec<&'a str>) -> Result<()> {
+    pub fn stop<'a>(&mut self, services: &Vec<String>) -> Result<()> {
         let mut config = Emissions::get();
         let mut to_stop: HashMap<String, Vec<String>> = HashMap::new();
         let mut to_keep: HashMap<String, Vec<String>> = HashMap::new();
 
-        // Create a nice list of all the services that need to be stopped
-        // and their corresponding docker compose files, making sure to 
-        // remove those services from the config.
-        for service in services {
+        // Stop all if told to
+        if services.contains(&"all".to_string()) {
             for (compose_file, running) in config.get_running_services().iter() {
-                let own = service.to_string();
+                running.iter().for_each(|s| {
+                    Self::push_or_init(&mut to_stop, compose_file, s.to_string());    
+                });
+            }
+        } else {
+            // Create a nice list of all the services that need to be stopped
+            // and their corresponding docker compose files, making sure to 
+            // remove those services from the config.
+            for service in services {
+                for (compose_file, running) in config.get_running_services().iter() {
+                    let own = service.to_string();
 
-                if !running.contains(&own) {
-                    Self::push_or_init(&mut to_keep, compose_file, own);
-                    continue;
+                    if !running.contains(&own) {
+                        Self::push_or_init(&mut to_keep, compose_file, own);
+                        continue;
+                    }
+
+                    Self::push_or_init(&mut to_stop, compose_file, own);
                 }
-
-                Self::push_or_init(&mut to_stop, compose_file, own);
             }
         }
 

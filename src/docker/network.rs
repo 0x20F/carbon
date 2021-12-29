@@ -61,7 +61,7 @@ pub fn remove(name: &str) -> Result<()> {
 
 /// Given a network name and a list of container names,
 /// connect all the containers to the network.
-pub fn connect(network: &str, container_names: &[&str]) -> Result<()> {
+pub fn connect(network: &str, container_names: &Vec<String>) -> Result<()> {
     run_if_container(
         container_names,
         |container| {
@@ -84,7 +84,7 @@ pub fn connect(network: &str, container_names: &[&str]) -> Result<()> {
 
 /// Given a network name and a list of container names,
 /// disconnect all the containers from the network.
-pub fn disconnect(network: &str, container_names: &[&str]) -> Result<()> {
+pub fn disconnect(network: &str, container_names: &Vec<String>) -> Result<()> {
     run_if_container(
         container_names,
         |container| {
@@ -154,7 +154,7 @@ pub fn show_all() {
 
 /// Helper function to run a closure if the container
 /// is found in the list of all available containers
-fn run_if_container<F>(to_match: &[&str], f: F) -> Result<()>
+fn run_if_container<F>(to_match: &Vec<String>, f: F) -> Result<()>
     where F: Fn(&super::container::Container) 
 {
     let containers = super::container::all();

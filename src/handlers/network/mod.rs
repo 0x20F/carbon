@@ -30,13 +30,13 @@ pub fn handle(matches: &ArgMatches) -> Result<()> {
 
     if let Some(matches) = matches.subcommand_matches("connect") {
         let network: String = matches.value_of("network").unwrap().to_string();
-        let containers: Vec<_> = matches.values_of("container").unwrap().collect();
+        let containers: Vec<String> = matches.values_of("container").unwrap().map(|s| s.to_string()).collect();
         docker::network::connect(&network, &containers)?;
     }
 
     if let Some(matches) = matches.subcommand_matches("disconnect") {
         let network: String = matches.value_of("network").unwrap().to_string();
-        let containers: Vec<_> = matches.values_of("container").unwrap().collect();
+        let containers: Vec<String> = matches.values_of("container").unwrap().map(|s| s.to_string()).collect();
         docker::network::disconnect(&network, &containers)?;
     }
 

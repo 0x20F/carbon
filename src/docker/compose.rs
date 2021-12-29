@@ -19,7 +19,7 @@ services:
 /// Build a new docker-compose file by combining all the carbon.yml
 /// files for each of the provided services into one file.
 /// Making sure to indent everything properly.
-pub fn build_compose_file(services: &Vec<&str>, carbon_conf: &str, clean: bool) -> Result<String> {
+pub fn build_compose_file(services: &Vec<String>, carbon_conf: &str, clean: bool) -> Result<String> {
     let mut compose = vec![];
     let configs = find_carbon_services(carbon_conf)?;
 
@@ -170,6 +170,30 @@ pub fn stop_service_container(name: &str, configuration: &str) -> Result<()> {
                     .expect("Something went wrong when trying to stop a service in a running compose file");
 
     unwrap_stderr!(output, DockerServiceShutdown)
+}
+
+
+
+
+pub fn get_all_services(isotope: bool) -> Result<Vec<String>> {
+    let file = if isotope { "carbon-isotope.yml" } else { "carbon.yml" };
+
+    let configs = find_carbon_services(file)?;
+    let mut services = vec![];
+
+    for (_, config) in configs.iter() {
+        let mut names: Vec<String> = config
+            .split("---")
+            .map(|s| s.trim())
+            .map(|s| s.split(":").next().unwrap())
+            .map(|s| s.trim())
+            .map(|s| s.to_string())
+            .collect();
+
+        services.append(&mut names);
+    }
+
+    Ok(services)
 }
 
 

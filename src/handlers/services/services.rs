@@ -40,7 +40,8 @@ impl<'p> Service<'p> {
         services: &Vec<String>, 
         display: bool, 
         isotope: bool, 
-        save_path: Option<&str>
+        save_path: Option<&str>,
+        dependencies: bool
     ) -> Result<()> {
         let mut carbon_conf = Emissions::get();
         let service_file = if isotope {
@@ -51,7 +52,12 @@ impl<'p> Service<'p> {
         };
         // Save the generated compose file if told to
         if save_path.is_some() {
-            let compose = docker::compose::build_compose_file(&services, &service_file, true)?;
+            let compose = docker::compose::build_compose_file(
+                &services, 
+                &service_file, 
+                true,
+                dependencies
+            )?;
 
             info!("Saving compose file to <bright-green>{}</>", save_path.unwrap());
 
@@ -77,7 +83,12 @@ impl<'p> Service<'p> {
 
         self.logger.info("Gathering individual service configurations...");
 
-        let compose = docker::compose::build_compose_file(&services, &service_file, false)?;
+        let compose = docker::compose::build_compose_file(
+            &services, 
+            &service_file, 
+            false,
+            dependencies
+        )?;
 
         self.logger.info("Building docker-compose file for all services to live in...");
 

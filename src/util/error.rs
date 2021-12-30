@@ -18,6 +18,9 @@ pub enum CarbonError {
 
     /// Given service name is already running
     ServiceAlreadyRunning(String),
+
+    /// Service had dependencies but auto flag or dependencies weren't provided
+    ServiceDependenciesNotProvided(String),
     
     /// Variable not defined in active environment
     UndefinedEnvVar(String, String),
@@ -62,6 +65,7 @@ impl fmt::Display for CarbonError {
             ServiceNotDefined(s) => format!("The <cyan>service</> you tried to access <bright-red>doesn't exist</>: <magenta>{}</>", s),
             ServiceNotRunning(s) => format!("The <cyan>service <magenta>{}</> isn't running. <bright-green>Try starting it first.</>", s),
             ServiceAlreadyRunning(s) => format!("The <cyan>service <magenta>{}</> is already running, aborting...\n  <bright-green>Try stopping it first.</>", s),
+            ServiceDependenciesNotProvided(s) => format!("{}", s),
             
             UndefinedEnvVar(s, p) => format!("The <b><yellow>{}</> environment <cyan>variable</> isn't defined in the provided dotenv file: <magenta>{}</>", s, p),
             NoActiveEnv => format!("No active environment file found, aborting..."),

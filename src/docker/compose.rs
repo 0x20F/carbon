@@ -19,53 +19,32 @@ services:
 /// Build a new docker-compose file by combining all the carbon.yml
 /// files for each of the provided services into one file.
 /// Making sure to indent everything properly.
-pub fn build_compose_file(services: &Vec<String>, carbon_conf: &str, clean: bool) -> Result<String> {
+pub fn build_compose_file(
+    services: &Vec<String>, 
+    carbon_conf: &str, 
+    clean: bool,
+    dependencies: bool
+) -> Result<String> {
+    // Find configs for all services and their dependencies
+    let full_services = find_service_dependencies(services, carbon_conf)?;
     let mut compose = vec![];
-    let configs = find_carbon_services(carbon_conf)?;
 
+    if services.len() != full_services.len() && !dependencies {
+        let message = "Dependencies weren't provided for the specified services, try using --auto-dependencies or providing them";
+        return Err(CarbonError::ServiceDependenciesNotProvided(message.to_string()))
+    }
 
-    // For each service that the user has requested,
-    // look through all the configs that were found and see
-    // if any of them contain that service.
-    for service in services {
-        let mut found = false;
+    for service in full_services {
+        let string = serde_yaml::to_string(&service).unwrap();
+        let clean = string.replace("---", "");
 
-        for (_, config) in configs.iter() {
-            // Split file into multiple documents 
-            let docs = config.split("\n---\n").collect::<Vec<&str>>();
-
-            // Check each document with serde
-            for doc in docs.iter() {
-                let mut v: serde_yaml::Value = serde_yaml::from_str(doc).unwrap();
-
-                match v[service] {
-                    serde_yaml::Value::Null => (),
-                    _ => {
-                        found = true;
-
-                        // Generate a container name if the container doesn't already have one
-                        if let serde_yaml::Value::Null = v[service]["container_name"] {
-                            if !clean {
-                                let name = format!("{}", service);
-                                v[service]["container_name"] = name.into();
-                            }
-                        }
-
-                        compose.push(serde_yaml::to_string(&v).unwrap());
-                        break;
-                    }
-                }
-            }
-        }
-
-        if !found {
-            return Err(CarbonError::ServiceNotDefined(service.to_string()));
-        }
+        compose.push(clean);
     }
 
     // Cleanup the yaml output since the docker-compose file doesn't
     // need to contain multiple documents.
-    let output = compose.join("\n").replace("---", "");
+    let output = compose.join("\n");
+
     Ok(merge_compose_file(&output))
 }
 
@@ -90,9 +69,35 @@ fn merge_compose_file(services: &str) -> String {
 
 
 
-fn find_carbon_services(carbon_conf: &str) -> Result<Vec<(String, String)>> {
+fn find_service_dependencies(services: &Vec<String>, carbon_conf: &str) -> Result<Vec<serde_yaml::Value>> {
+    let mut parsed = vec![];
+    let mut dependencies = vec![];
+    let mut yaml = find_carbon_services(carbon_conf, services)?;
+
+    for (name, config) in yaml {
+        if let serde_yaml::Value::Sequence(d) = &config[name]["depends_on"] {
+            for dependency in d {
+                let dependency = dependency.as_str().unwrap();
+                dependencies.push(dependency.to_string());
+            }
+        }
+
+        parsed.push(config);
+    }
+
+    if dependencies.len() > 0 {
+        parsed.append(&mut find_service_dependencies(&dependencies, carbon_conf)?);
+    }
+
+    Ok(parsed)
+}
+
+
+
+fn find_carbon_services(carbon_conf: &str, services: &Vec<String>) -> Result<Vec<(String, serde_yaml::Value)>> {
     let dir = util::environment::get_root_directory()?;
     let mut configs = vec![];
+    let mut parsed = vec![];
 
     // Find all the carbon.yml/carbon-isotope.yml files in the project directory
     for entry in fs::read_dir(dir).unwrap() {
@@ -108,7 +113,40 @@ fn find_carbon_services(carbon_conf: &str) -> Result<Vec<(String, String)>> {
         };
     }
 
-    Ok(configs)
+    for service in services {
+        let mut found = false;
+
+        for (path, config) in configs.iter() {
+            // Split file into multiple documents 
+            let docs = config.split("\n---\n").collect::<Vec<&str>>();
+    
+            // Check each document with serde
+            for doc in docs.iter() {
+                let v: serde_yaml::Value = serde_yaml::from_str(doc).unwrap();
+    
+                if services.contains(&"*".to_string()) {
+                    parsed.push((path.clone(), v));
+                    continue;
+                }
+
+                match v[service] {
+                    serde_yaml::Value::Null => (),
+                    _ => {
+                        parsed.push((service.clone(), v));
+                        found = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if !found {
+            return Err(CarbonError::ServiceNotDefined(service.to_string()));
+        }
+    }
+
+
+    Ok(parsed)
 }
 
 
@@ -178,19 +216,18 @@ pub fn stop_service_container(name: &str, configuration: &str) -> Result<()> {
 pub fn get_all_services(isotope: bool) -> Result<Vec<String>> {
     let file = if isotope { "carbon-isotope.yml" } else { "carbon.yml" };
 
-    let configs = find_carbon_services(file)?;
+    let configs = find_carbon_services(file, &vec!["*".to_string()])?;
     let mut services = vec![];
 
     for (_, config) in configs.iter() {
-        let mut names: Vec<String> = config
+        let config = serde_yaml::to_string(config).unwrap();
+
+        config
             .split("---")
             .map(|s| s.trim())
             .map(|s| s.split(":").next().unwrap())
             .map(|s| s.trim())
-            .map(|s| s.to_string())
-            .collect();
-
-        services.append(&mut names);
+            .for_each(|s| services.push(s.to_string()));
     }
 
     Ok(services)
@@ -201,20 +238,19 @@ pub fn get_all_services(isotope: bool) -> Result<Vec<String>> {
 /// Show all services that carbon has access to through the
 /// currently active environment file in a nicely formatted table.
 pub fn show_available() -> Result<()> {
-    let mut configs = find_carbon_services("carbon.yml")?;
-    configs.append(&mut find_carbon_services("carbon-isotope.yml")?);
+    let mut configs = find_carbon_services("carbon.yml", &vec!["*".to_string()])?;
+    configs.append(&mut find_carbon_services("carbon-isotope.yml", &vec!["*".to_string()])?);
 
     let mut names = vec![];
 
     for (path, config) in configs.iter() {
-        let mut services: Vec<_> = config
+        let string = serde_yaml::to_string(config).unwrap();
+
+        string
             .split("---")
             .map(|s| s.trim())
             .map(|s| s.split(":").next().unwrap())
-            .map(|s| (path.clone(), s))
-            .collect();
-
-        names.append(&mut services);
+            .for_each(|s| names.push((path.clone(), s.to_string())));
     }
 
     let mut table = Table::new(2, vec![]);

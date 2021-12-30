@@ -6,12 +6,19 @@ All notable changes to this project will be documented in this file.
 ### Bug Fixes
 
 - Stop container with specific compose file in mind
+- Remove forgotten debug log
+- -a parameter wasn't displaying a correct looking table when listing services
 
 ### Features
 
 - Service names aren't dependent on directory names anymore
 - Pass the currently active .env file to all docker services being created
 - Add flag to  command to display all the services that carbon can actually create, opposed to the original command that shows all available docker containers
+- Add a custom container name to containers that don't have one
+- Save the generated compose file instead of running services Closes
+- Don't add anything extra when saving the compose file
+- Passing in 'all' as service name when starting or stopping services will take everything carbon has access to
+- Ability to automatically 'add' all services that are depended on to the compose file that's being generated
 
 ## [1.1.1] - 2021-12-27
 

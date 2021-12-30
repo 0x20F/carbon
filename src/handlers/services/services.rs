@@ -54,8 +54,7 @@ impl<'p> Service<'p> {
         if save_path.is_some() {
             let compose = docker::compose::build_compose_file(
                 &services, 
-                &service_file, 
-                true,
+                &service_file,
                 dependencies
             )?;
 
@@ -85,8 +84,7 @@ impl<'p> Service<'p> {
 
         let compose = docker::compose::build_compose_file(
             &services, 
-            &service_file, 
-            false,
+            &service_file,
             dependencies
         )?;
 

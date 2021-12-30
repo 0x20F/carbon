@@ -1,6 +1,6 @@
 [package]
 name = "carbon-cli"
-version = "0.1.2"
+version = "1.3.0"
 edition = "2021"
 
 documentation = "https://github.com/4khara/carbon"

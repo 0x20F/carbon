@@ -26,7 +26,8 @@ pub fn save(path: &str, contents: &str) -> Result<()> {
 /// in the /tmp directory with a random name.
 pub fn write_tmp(extension: &str, content: &str) -> Result<String> {
     let name = generators::random_string(15);
-    let path = format!("/tmp/{}.{}", name, extension);
+    let dir = std::env::temp_dir();
+    let path = format!("{}/{}.{}", dir.display(), name, extension);
 
     save(&path, content)?;
 

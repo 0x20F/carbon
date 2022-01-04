@@ -6,7 +6,7 @@ use crate::error::Result;
 
 
 
-static CONFIG_PATH: &'static str = "/tmp/carbon-emissions.toml";
+static CONFIG_PATH: &'static str = "carbon-emissions.toml";
 
 /// The "database" for all carbon related things
 ///
@@ -44,7 +44,8 @@ impl Emissions {
     /// Write the emissions database to disk
     pub fn save(config: &Self) -> Result<()> {
         let content = toml::to_string(config).unwrap();
-        fs::write(CONFIG_PATH, &content).expect("Couldn't save config file");
+        let path = format!("{}/{}", std::env::temp_dir().display(), CONFIG_PATH);
+        fs::write(path, &content).expect("Couldn't save config file");
 
         Ok(())
     }

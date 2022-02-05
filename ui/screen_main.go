@@ -7,6 +7,13 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+var menuStyle = lipgloss.NewStyle().
+	Foreground(lipgloss.Color("#7d8899")).
+	PaddingBottom(5).
+	Width(WindowDimensions[0] * 3 / 10).
+	Height(WindowDimensions[1]).
+	Align(lipgloss.Left)
+
 type MainScreen struct {
 	choices []string
 	cursor  int
@@ -19,18 +26,18 @@ func initMainScreen() *MainScreen {
 	}
 }
 
-func (m *MainScreen) Render(window *model) string {
-	s := ""
+func (m *MainScreen) Init() tea.Cmd {
+	return nil
+}
+
+func (m *MainScreen) View() string {
+	// Header
+	s := lipgloss.NewStyle().Foreground(lipgloss.Color("#181b21")).Render("Docker\n")
 
 	// Render the main menu
 	for i, choice := range m.choices {
 		indicator := " "
 		style := lipgloss.NewStyle()
-
-		// Header for docker
-		if i == 0 {
-			s += lipgloss.NewStyle().Foreground(lipgloss.Color("#181b21")).Render("Docker\n")
-		}
 
 		// Header for Carbon
 		if i == 3 {
@@ -45,19 +52,10 @@ func (m *MainScreen) Render(window *model) string {
 		s += fmt.Sprintf("\n%s %s", indicator, style.Render(choice))
 	}
 
-	// 30% of window width
-	width := window.width * 3 / 10
-
-	style := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#7d8899")).
-		Padding(5, 2, 5, 2).
-		Width(width).
-		Align(lipgloss.Left)
-
-	return style.Render(s)
+	return menuStyle.Render(s)
 }
 
-func (m *MainScreen) Update(msg tea.Msg, original *model) tea.Cmd {
+func (m *MainScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -86,9 +84,9 @@ func (m *MainScreen) Update(msg tea.Msg, original *model) tea.Cmd {
 			}
 
 			// Set the state
-			original.state = state
+			State = state
 		}
 	}
 
-	return nil
+	return m, nil
 }

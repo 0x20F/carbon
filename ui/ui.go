@@ -8,11 +8,13 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+var docStyle = lipgloss.NewStyle().Margin(1, 3)
+
+var WindowDimensions = [2]int{0, 0}
+var State string = "main"
+
 type model struct {
-	menus  map[string]Screen
-	state  string
-	width  int
-	height int
+	menus map[string]tea.Model
 }
 
 func Init() {
@@ -25,13 +27,9 @@ func Init() {
 
 func initialModel() model {
 	return model{
-		menus: map[string]Screen{
-			"main":  initMainScreen(),
-			"build": &BuildScreen{},
-			"run":   &RunScreen{},
-			"shell": &ShellScreen{},
+		menus: map[string]tea.Model{
+			"main": initMainScreen(),
 		},
-		state: "main",
 	}
 }
 
@@ -42,8 +40,10 @@ func (m model) Init() tea.Cmd {
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		m.width = msg.Width
-		m.height = msg.Height
+		top, right, bottom, left := docStyle.GetMargin()
+
+		WindowDimensions[0] = msg.Width - left - right
+		WindowDimensions[1] = msg.Height - top - bottom - 2
 
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -51,12 +51,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 
 		case "backspace", "left", "h":
-			m.state = "main"
+			State = "main"
 			return m, nil
 		}
 	}
 
-	cmd := m.menus[m.state].Update(msg, &m)
+	_, cmd := m.menus[State].Update(msg)
 
 	return m, cmd
 }
@@ -65,13 +65,13 @@ func (m model) View() string {
 	s := ""
 
 	// If there's a menu to render, render it
-	if m.state != "" {
-		s += m.menus[m.state].Render(&m)
+	if State != "" {
+		s += m.menus[State].View()
 	}
 
 	// The footer
 	style := lipgloss.NewStyle().Foreground(lipgloss.Color("#7d8899"))
 	s += style.Render("\nq / Ctrl + C to quit\n")
 
-	return s
+	return docStyle.Render(s)
 }

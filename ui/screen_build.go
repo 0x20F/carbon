@@ -4,7 +4,7 @@ import tea "github.com/charmbracelet/bubbletea"
 
 type BuildScreen struct{}
 
-func (m *BuildScreen) Render() string {
+func (m *BuildScreen) Render(window *model) string {
 	return "Build Menu"
 }
 

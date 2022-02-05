@@ -4,7 +4,7 @@ import tea "github.com/charmbracelet/bubbletea"
 
 type RunScreen struct{}
 
-func (m *RunScreen) Render() string {
+func (m *RunScreen) Render(window *model) string {
 	return "Run Menu"
 }
 

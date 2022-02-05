@@ -4,7 +4,7 @@ import tea "github.com/charmbracelet/bubbletea"
 
 type ShellScreen struct{}
 
-func (m *ShellScreen) Render() string {
+func (m *ShellScreen) Render(window *model) string {
 	return "Run Menu"
 }
 

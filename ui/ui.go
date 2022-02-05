@@ -37,13 +37,16 @@ func (m model) Init() tea.Cmd {
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if Quit(msg) {
-		return m, tea.Quit
-	}
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "ctrl+c", "q":
+			return m, tea.Quit
 
-	if NavigateBack(msg) {
-		m.state = "main"
-		return m, nil
+		case "backspace":
+			m.state = "main"
+			return m, nil
+		}
 	}
 
 	cmd := m.menus[m.state].Update(msg, &m)

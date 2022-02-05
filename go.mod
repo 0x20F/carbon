@@ -2,9 +2,9 @@ module co2
 
 go 1.17
 
+require github.com/charmbracelet/bubbletea v0.19.3
+
 require (
-	github.com/charmbracelet/bubbletea v0.19.3 // indirect
-	github.com/charmbracelet/lipgloss v0.4.0 // indirect
 	github.com/containerd/console v1.0.2 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-isatty v0.0.13 // indirect

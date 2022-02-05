@@ -17,7 +17,7 @@ func (c *DockerBuildCommandBuilder) Path(path string) *DockerBuildCommandBuilder
 
 func (c *DockerBuildCommandBuilder) File(file string) *DockerBuildCommandBuilder {
 	c.Segments = append(c.Segments, Segment{
-		Priority: 1,
+		Priority: 10,
 		Key:      "-f",
 		Value:    file,
 	})
@@ -27,7 +27,7 @@ func (c *DockerBuildCommandBuilder) File(file string) *DockerBuildCommandBuilder
 
 func (c *DockerBuildCommandBuilder) Tag(tag string) *DockerBuildCommandBuilder {
 	c.Segments = append(c.Segments, Segment{
-		Priority: 2,
+		Priority: 20,
 		Key:      "-t",
 		Value:    tag,
 	})
@@ -37,7 +37,7 @@ func (c *DockerBuildCommandBuilder) Tag(tag string) *DockerBuildCommandBuilder {
 
 func (c *DockerBuildCommandBuilder) BuildArg(arg string) *DockerBuildCommandBuilder {
 	c.Segments = append(c.Segments, Segment{
-		Priority: 3,
+		Priority: 30,
 		Key:      "--build-arg",
 		Value:    arg,
 	})

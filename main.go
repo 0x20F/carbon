@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"co2/ui"
+)
 
 func main() {
-	fmt.Println("Hello World")
+	ui.Init()
 }

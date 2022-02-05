@@ -1,9 +1,5 @@
 package builder
 
-import (
-	"sort"
-)
-
 type DockerBuildCommandBuilder struct {
 	Command  string
 	Segments []Segment
@@ -59,22 +55,5 @@ func DockerBuildCommand() *DockerBuildCommandBuilder {
 }
 
 func (c *DockerBuildCommandBuilder) Build() string {
-	var command = c.Command
-
-	// Sort segments based on priority
-	sort.Slice(c.Segments, func(i, j int) bool {
-		return c.Segments[i].Priority < c.Segments[j].Priority
-	})
-
-	for _, segment := range c.Segments {
-		if segment.Key != "" {
-			command += " " + segment.Key
-		}
-
-		if segment.Value != "" {
-			command += " " + segment.Value
-		}
-	}
-
-	return command
+	return BuildCommand(c.Command, c.Segments...)
 }

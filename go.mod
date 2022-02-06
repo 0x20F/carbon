@@ -20,4 +20,5 @@ require (
 	github.com/sahilm/fuzzy v0.1.0 // indirect
 	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c // indirect
 	golang.org/x/term v0.0.0-20210422114643-f5beecf764ed // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

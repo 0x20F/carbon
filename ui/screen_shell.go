@@ -36,9 +36,13 @@ func initialShellScreen() *ShellScreen {
 	}
 }
 
-func (m *ShellScreen) Render(window *model) string {
+func (m *ShellScreen) Init() tea.Cmd {
+	return nil
+}
+
+func (m *ShellScreen) View() string {
 	// Header
-	s := lipgloss.NewStyle().Foreground(lipgloss.Color("#181b21")).Render("Shell Within Container\nPick Shell Type:\n")
+	s := Title("Pick Shell Type")
 
 	// Render the main menu
 	for i, choice := range m.choices {
@@ -58,12 +62,12 @@ func (m *ShellScreen) Render(window *model) string {
 	return style.Render(s)
 }
 
-func (m *ShellScreen) Update(msg tea.Msg, original *model) tea.Cmd {
+func (m *ShellScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.typing {
 		var cmd tea.Cmd
 		m.input, cmd = m.input.Update(msg)
 
-		return cmd
+		return m, cmd
 	}
 
 	switch msg := msg.(type) {
@@ -88,8 +92,19 @@ func (m *ShellScreen) Update(msg tea.Msg, original *model) tea.Cmd {
 			// If custom, show text input
 			if m.cursor == 3 {
 				m.typing = true
-				return textinput.Blink
 			}
+		}
+
+		// Loop through all menu items
+		for i, choice := range m.choices {
+			// If the cursor is on this item
+			if i == m.cursor {
+				choice.Select()
+			} else {
+				choice.Deselect()
+			}
+
+			choice.Update(msg)
 		}
 	}
 
@@ -105,5 +120,5 @@ func (m *ShellScreen) Update(msg tea.Msg, original *model) tea.Cmd {
 		choice.Update(msg)
 	}
 
-	return nil
+	return m, nil
 }

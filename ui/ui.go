@@ -28,7 +28,8 @@ func Init() {
 func initialModel() model {
 	return model{
 		menus: map[string]tea.Model{
-			"main": initMainScreen(),
+			"main":  initMainScreen(),
+			"shell": initialShellScreen(),
 		},
 	}
 }

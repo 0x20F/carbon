@@ -39,3 +39,8 @@ func (m *MenuItem) View() string {
 
 	return itemStyle.Render("\n  " + m.name)
 }
+
+// Simple menu title component
+func Title(title string) string {
+	return lipgloss.NewStyle().Foreground(lipgloss.Color("#181b21")).Render(title + "\n")
+}

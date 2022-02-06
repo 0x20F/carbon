@@ -1,8 +1,6 @@
 package ui
 
 import (
-	"fmt"
-
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -15,13 +13,22 @@ var menuStyle = lipgloss.NewStyle().
 	Align(lipgloss.Left)
 
 type MainScreen struct {
-	choices []string
+	choices []*MenuItem
 	cursor  int
 }
 
 func initMainScreen() *MainScreen {
+	choices := []*MenuItem{
+		NewMenuItem("build", "Build Container"),
+		NewMenuItem("run", "Run Container"),
+		NewMenuItem("shell", "Shell Within Container"),
+		NewMenuItem("services", "Services"),
+	}
+
+	choices[0].Select()
+
 	return &MainScreen{
-		choices: []string{"build", "run", "shell", "services"},
+		choices: choices,
 		cursor:  0,
 	}
 }
@@ -32,24 +39,15 @@ func (m *MainScreen) Init() tea.Cmd {
 
 func (m *MainScreen) View() string {
 	// Header
-	s := lipgloss.NewStyle().Foreground(lipgloss.Color("#181b21")).Render("Docker\n")
+	s := Title("Docker Wrappers")
 
 	// Render the main menu
 	for i, choice := range m.choices {
-		indicator := " "
-		style := lipgloss.NewStyle()
-
-		// Header for Carbon
 		if i == 3 {
-			s += lipgloss.NewStyle().PaddingTop(2).Foreground(lipgloss.Color("#181b21")).Render("Carbon\n")
+			s += Title("\n\nCarbon")
 		}
 
-		if i == m.cursor {
-			indicator = ">"
-			style = lipgloss.NewStyle().Foreground(lipgloss.Color("#2391e6"))
-		}
-
-		s += fmt.Sprintf("\n%s %s", indicator, style.Render(choice))
+		s += choice.View()
 	}
 
 	return menuStyle.Render(s)
@@ -85,6 +83,18 @@ func (m *MainScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			// Set the state
 			State = state
+		}
+
+		// Loop through all menu items
+		for i, choice := range m.choices {
+			// If the cursor is on this item
+			if i == m.cursor {
+				choice.Select()
+			} else {
+				choice.Deselect()
+			}
+
+			choice.Update(msg)
 		}
 	}
 

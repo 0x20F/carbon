@@ -1,16 +1,17 @@
 package main
 
 import (
-	"co2/carbon"
+	"co2/database"
 	"fmt"
-
-	"gopkg.in/yaml.v2"
 )
 
 func main() {
-	declarations := carbon.Configurations("../", 2)
+	/*declarations := carbon.Configurations("../", 2)
 
 	data, _ := yaml.Marshal(declarations["intake"].FullContents)
+	fmt.Println(string(data))*/
 
-	fmt.Println(string(data))
+	containers := database.Containers()
+	fmt.Println(containers)
+
 }

@@ -2,21 +2,11 @@ package carbon
 
 import (
 	"bytes"
+	"co2/types"
 	"io/ioutil"
 
 	"gopkg.in/yaml.v2"
 )
-
-type CarbonYaml struct {
-	Image     string   `yaml:"image"`
-	Container string   `yaml:"container_name"`
-	DependsOn []string `yaml:"depends_on"`
-
-	// Everything within the file, unparsed
-	FullContents map[string]interface{}
-}
-
-type CarbonConfig map[string]CarbonYaml
 
 // Recursively dig through a directory until
 // we exhaust all the available directories in the given
@@ -52,13 +42,13 @@ func findCarbonFiles(root string, depth int) []string {
 // Look through a specific directory and find all the
 // carbon.yml files. Parse them and return a nice map with
 // all the found services.
-func Configurations(path string, depth int) CarbonConfig {
+func Configurations(path string, depth int) types.CarbonConfig {
 	files := findCarbonFiles(path, depth)
 
 	// We want one map with all the available
 	// configurations for a given path.
-	var config CarbonConfig = make(CarbonConfig)
-	var values map[string]interface{} = make(map[string]interface{})
+	var config types.CarbonConfig = make(types.CarbonConfig)
+	var values types.ServiceDefinition = make(types.ServiceDefinition)
 
 	for _, file := range files {
 		content, err := ioutil.ReadFile(file)
@@ -89,8 +79,9 @@ func Configurations(path string, depth int) CarbonConfig {
 		c := config[key]
 		v := values[key]
 
-		c.FullContents = make(map[string]interface{})
-		c.FullContents[key] = v
+		c.Name = key
+		c.FullContents = make(types.ServiceFields)
+		c.FullContents = v
 
 		config[key] = c
 

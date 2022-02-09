@@ -2,7 +2,8 @@ package types
 
 import (
 	"co2/helpers"
-	"fmt"
+
+	"gopkg.in/yaml.v2"
 )
 
 type ComposeFile struct {
@@ -11,16 +12,23 @@ type ComposeFile struct {
 	Services ServiceDefinition `yaml:"services"`
 }
 
-func NewComposeFile() ComposeFile {
-	name := randomComposeName()
-
-	return ComposeFile{
-		Name:     name,
-		Version:  "3",
-		Services: make(ServiceDefinition),
-	}
+func (c *ComposeFile) Path() string {
+	return helpers.ComposeDir() + "/" + c.Name
 }
 
-func randomComposeName() string {
-	return fmt.Sprintf("%s.docker-compose.yml", helpers.RandomAlphaString(10))
+func (c *ComposeFile) Save(finished chan bool) {
+	// Turn the ComposeFile into a string
+	contents, err := yaml.Marshal(c)
+	if err != nil {
+		panic(err)
+	}
+
+	// Save it to the file
+	savePath := helpers.ComposeDir()
+	_, err = helpers.WriteFile(savePath, c.Name, contents)
+	if err != nil {
+		panic(err)
+	}
+
+	finished <- true
 }

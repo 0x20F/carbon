@@ -5,8 +5,7 @@ import (
 )
 
 func Containers() []types.Container {
-	db, close := Get()
-	defer close()
+	db, _ := Get()
 
 	rows, err := db.Query("SELECT * FROM containers")
 	handle(err)
@@ -25,8 +24,7 @@ func Containers() []types.Container {
 }
 
 func InsertContainer(container types.Container) types.Container {
-	db, close := Get()
-	defer close()
+	db, _ := Get()
 
 	stmt, err := db.Prepare("INSERT INTO containers(uid, name, compose_file) VALUES(?,?,?);")
 	handle(err)
@@ -42,8 +40,7 @@ func InsertContainer(container types.Container) types.Container {
 }
 
 func DeleteContainer(container types.Container) int64 {
-	db, close := Get()
-	defer close()
+	db, _ := Get()
 
 	stmt, err := db.Prepare("DELETE FROM containers WHERE uid=? AND name=?;")
 	handle(err)

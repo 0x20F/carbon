@@ -2,14 +2,15 @@ package cmd
 
 import (
 	"co2/carbon"
+	"co2/database"
 	"co2/docker"
 	"co2/helpers"
 	"co2/types"
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
 )
 
 var (
@@ -30,6 +31,11 @@ func init() {
 }
 
 func exec(cmd *cobra.Command, args []string) {
+	_, ok := shouldRun(args)
+	if !ok {
+		return
+	}
+
 	services := strings.Join(args, " ")
 
 	configs := carbon.Configurations("../", 2) // FIXME: Don't hardcode this
@@ -44,7 +50,7 @@ func exec(cmd *cobra.Command, args []string) {
 		found := configs[service]
 
 		// Inject a random container name
-		container := helpers.RandomAlphaString(10)
+		container := service + "-" + helpers.RandomAlphaString(10)
 		found.FullContents["container_name"] = container
 		found.Container = container
 
@@ -58,18 +64,15 @@ func exec(cmd *cobra.Command, args []string) {
 		compose.Services[service.Name] = service.FullContents
 	}
 
-	// Turn it into yaml
-	yml, err := yaml.Marshal(compose)
-	if err != nil {
-		panic(err)
-	}
+	// Save the compose file
+	channel := make(chan bool)
+	go compose.Save(channel)
 
-	// Print the yaml
-	fmt.Println(string(yml))
+	<-channel
 
-	// 4. Group them all together in a map
-	// 5. Save that Map into a docker compose file
-	// 6. for now, output the new file.
+	go containerize(channel, compose)
+
+	<-channel
 
 	if start && !stop {
 		fmt.Println("You want to START the following services:", services)
@@ -78,4 +81,51 @@ func exec(cmd *cobra.Command, args []string) {
 	if stop && !start {
 		fmt.Println("You want to STOP the following services:", services)
 	}
+}
+
+func shouldRun(provided []string) ([]types.Container, bool) {
+	// Get all containers from the database
+	containers := database.Containers()
+
+	// If an of the provided containers is in the database, quit
+	for _, container := range containers {
+		if helpers.Contains(provided, container.Name) {
+			fmt.Printf("%s is already in the database\n", container.Name)
+			return nil, false
+		}
+	}
+
+	return containers, true
+}
+
+func containerize(channel chan bool, compose types.ComposeFile) {
+	// Create container types for all services in the compose file
+	containers := []types.Container{}
+
+	for name, service := range compose.Services {
+		container := types.Container{
+			Name:        name,
+			Uid:         service["container_name"].(string),
+			ComposeFile: compose.Path(),
+		}
+
+		containers = append(containers, container)
+	}
+
+	// Create a workgroup for all the containers
+	var wg sync.WaitGroup
+
+	// Save all the containers
+	for _, container := range containers {
+		wg.Add(1)
+		go func(container types.Container) {
+			defer wg.Done()
+
+			// Save the container
+			database.InsertContainer(container)
+		}(container)
+	}
+
+	wg.Wait()
+	channel <- true
 }

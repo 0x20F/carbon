@@ -1,7 +1,7 @@
 package main
 
 import (
-	"co2/cmd"
+	"co2/runner"
 	"math/rand"
 	"time"
 )
@@ -15,5 +15,6 @@ func main() {
 	data, _ := yaml.Marshal(declarations["intake"].FullContents)
 	fmt.Println(string(data))*/
 
-	cmd.Execute()
+	//cmd.Execute()
+	runner.Execute("docker container ls -aq")
 }

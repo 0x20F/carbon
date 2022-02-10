@@ -3,6 +3,7 @@ package helpers
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 )
 
 func WriteFile(path string, name string, contents []byte) (string, error) {
@@ -16,4 +17,8 @@ func WriteFile(path string, name string, contents []byte) (string, error) {
 	}
 
 	return path + "/" + name, nil
+}
+
+func DeleteFile(path string) error {
+	return os.Remove(path)
 }

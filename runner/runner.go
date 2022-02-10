@@ -38,7 +38,7 @@ func Execute(command string) {
 					continue
 				}
 
-				fmt.Print(string(err))
+				fmt.Println(string(err))
 			}
 		}
 	}(doneChan)

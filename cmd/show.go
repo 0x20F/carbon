@@ -18,7 +18,7 @@ var (
 )
 
 func init() {
-	showCmd.Flags().BoolVarP(&running, "running", "r", false, "show all currently running carbon containers")
+	showCmd.Flags().BoolVarP(&running, "running", "r", false, "show all currently running containers")
 }
 
 func execShow(cmd *cobra.Command, args []string) {

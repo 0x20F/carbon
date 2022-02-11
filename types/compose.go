@@ -16,6 +16,14 @@ type ComposeFile struct {
 	GeneratedName string            `yaml:"-"`        // The name of the compose file with the unique id prepended
 }
 
+func NewComposeFile() ComposeFile {
+	return ComposeFile{
+		Name:     "carbon.docker-compose.yml",
+		Version:  "3",
+		Services: make(ServiceDefinition),
+	}
+}
+
 // Generate a unique identifier for the compose file
 // based on the name of the services that the compose file
 // contains.

@@ -1,21 +1,54 @@
 package docker
 
 import (
-	"co2/helpers"
-	"co2/types"
-	"fmt"
+	"context"
+	"sync"
+
+	dockerTypes "github.com/docker/docker/api/types"
+	"github.com/docker/docker/client"
 )
 
-func NewComposeFile() types.ComposeFile {
-	name := randomComposeName()
+var once sync.Once
+var instance *impl
 
-	return types.ComposeFile{
-		Name:     name,
-		Version:  "3",
-		Services: make(types.ServiceDefinition),
-	}
+type impl struct {
+	docker DockerWrapper
 }
 
-func randomComposeName() string {
-	return fmt.Sprintf("%s.docker-compose.yml", helpers.RandomAlphaString(10))
+func wrapper() *impl {
+	if instance != nil {
+		return instance
+	}
+
+	return CustomWrapper(&Wrapper{})
+}
+
+func CustomWrapper(docker DockerWrapper) *impl {
+	once.Do(func() {
+		instance = &impl{
+			docker: &Wrapper{},
+		}
+	})
+
+	return instance
+}
+
+type DockerWrapper interface {
+	RunningContainers() []dockerTypes.Container
+}
+
+type Wrapper struct{}
+
+func (w *Wrapper) RunningContainers() []dockerTypes.Container {
+	cli, err := client.NewClientWithOpts(client.FromEnv)
+	if err != nil {
+		panic(err)
+	}
+
+	containers, err := cli.ContainerList(context.Background(), dockerTypes.ContainerListOptions{})
+	if err != nil {
+		panic(err)
+	}
+
+	return containers
 }

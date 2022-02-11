@@ -4,7 +4,6 @@ import (
 	"co2/builder"
 	"co2/carbon"
 	"co2/database"
-	"co2/docker"
 	"co2/helpers"
 	"co2/logger"
 	"co2/runner"
@@ -69,7 +68,6 @@ func handleStart(args []string) {
 	configs := carbon.Configurations("../", 2) // FIXME: Don't hardcode this
 	choices := types.CarbonConfig{}
 
-	// 2. Get their configurations
 	for _, service := range args {
 		if _, ok := configs[service]; !ok {
 			continue
@@ -85,7 +83,7 @@ func handleStart(args []string) {
 		choices[service] = found
 	}
 
-	compose := docker.NewComposeFile()
+	compose := types.NewComposeFile()
 
 	// Add all the services to the compose file
 	for _, service := range choices {

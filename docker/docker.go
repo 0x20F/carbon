@@ -6,14 +6,8 @@ import (
 	"fmt"
 )
 
-func RunningContainers() []string {
-	return []string{}
-}
-
 func NewComposeFile() types.ComposeFile {
 	name := randomComposeName()
-
-	fmt.Println("New name is:", name)
 
 	return types.ComposeFile{
 		Name:     name,

@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"co2/database"
+	"co2/docker"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -22,16 +22,15 @@ func init() {
 }
 
 func execShow(cmd *cobra.Command, args []string) {
-	if !running {
-		fmt.Println("Nothing to show...")
-		return
+	if running {
+		showRunning()
 	}
+}
 
-	// Get all containers
-	containers := database.Containers()
+func showRunning() {
+	containers := docker.RunningContainers()
 
-	// Print them all
-	for _, container := range containers {
-		fmt.Println(container)
+	for key, container := range containers {
+		fmt.Println(key, container.Names[0], container.ID, container.Image, container.Status, container.Created)
 	}
 }

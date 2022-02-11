@@ -6,6 +6,7 @@ import (
 	"co2/database"
 	"co2/docker"
 	"co2/helpers"
+	"co2/logger"
 	"co2/runner"
 	"co2/types"
 	"fmt"
@@ -41,7 +42,7 @@ func execService(cmd *cobra.Command, args []string) {
 			return
 		}
 
-		fmt.Println("You want to START the following services:", services)
+		logger.Green("START", "Starting services...", fmt.Sprint(len(services)))
 		handleStart(args)
 	} else if stop {
 		fmt.Println("You want to STOP the following services:", services)

@@ -2,9 +2,10 @@ package logger
 
 import (
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/pborman/ansi"
 )
 
 type Alignment int
@@ -72,11 +73,12 @@ func (t *Table) Display() {
 func (t *Table) addRow(row []string) {
 	for i := 0; i < t.ColumnCount; i++ {
 		item := row[i]
+		clean := cleanLen(item)
 
 		// If the current element is longer than the current
 		// padding, update the padding
-		if len(item) > t.Paddings[i] {
-			t.Paddings[i] = len(item)
+		if clean > t.Paddings[i] {
+			t.Paddings[i] = clean
 		}
 
 		// Add it to the correct column
@@ -85,14 +87,20 @@ func (t *Table) addRow(row []string) {
 }
 
 func formatString(str string, pad int) string {
-	// Find all ANSI escape codes in the string
-	ansiCodes := regexp.MustCompile("\x1b\\[[0-9;]*[mK]")
-	ansiCount := ansiCodes.FindAllStringIndex(str, -1)
+	clean := cleanLen(str)
 
-	width := pad + len(ansiCount) + 2 // the 2 is to have an extra space on either side
+	width := pad + 2 // the 2 is to have an extra space on either side
+	if clean != len(str) {
+		width += (len(str) - clean)
+	}
 
 	// Pad the string
 	final := fmt.Sprintf("%-"+strconv.Itoa(width)+"s", str)
 
 	return final
+}
+
+func cleanLen(str string) int {
+	clean, _ := ansi.Strip([]byte(str))
+	return len(clean)
 }

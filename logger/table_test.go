@@ -1,6 +1,10 @@
 package logger
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/charmbracelet/lipgloss"
+)
 
 func TestTableApi(t *testing.T) {
 	table := NewTable(3)
@@ -23,5 +27,17 @@ func TestFormatString(t *testing.T) {
 
 	if len(formatted) != 12 {
 		t.Error("Expected len", 12, "got", len(formatted))
+	}
+}
+
+func TestStringAnsiCleanup(t *testing.T) {
+	style := lipgloss.NewStyle().
+		Bold(true)
+
+	str := style.Render("1234")
+	clean := cleanLen(str)
+
+	if clean == len(str) || clean != 4 {
+		t.Error("Expected clean len", 4, "got", clean)
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 )
 
@@ -17,6 +18,9 @@ var (
 		Short: "Shows different kinds of information",
 		Run:   execShow,
 	}
+
+	fadedStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#777777"))
 )
 
 func init() {
@@ -59,9 +63,9 @@ func showRunning() {
 			container.Names[0],
 			container.ID[:7],
 			container.Image,
-			strings.Join(ports, ", "),
-			fmt.Sprint(container.Created),
-			container.Status,
+			fadedStyle.Render(strings.Join(ports, ", ")),
+			fadedStyle.Render(fmt.Sprint(container.Created)),
+			fadedStyle.Render(container.Status),
 		)
 	}
 

@@ -14,14 +14,27 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var startCmd = &cobra.Command{
-	Use:   "start",
-	Short: "Starts the provided services",
-	Args:  cobra.MinimumNArgs(1),
-	Run:   execStart,
+var (
+	force bool
+
+	startCmd = &cobra.Command{
+		Use:   "start",
+		Short: "Starts the provided services",
+		Args:  cobra.MinimumNArgs(1),
+		Run:   execStart,
+	}
+)
+
+func init() {
+	help := "Force the start of the service. Even if it's already in the database. This will delete the old ones."
+	startCmd.Flags().BoolVarP(&force, "force", "f", false, help)
 }
 
-func shouldRun(provided []string) ([]types.Container, bool) {
+func shouldRun(provided []string) bool {
+	if force {
+		return true
+	}
+
 	// Get all containers from the database
 	containers := database.Containers()
 
@@ -29,17 +42,22 @@ func shouldRun(provided []string) ([]types.Container, bool) {
 	for _, container := range containers {
 		if helpers.Contains(provided, container.Name) {
 			fmt.Printf("%s is already in the database\n", container.Name)
-			return nil, false
+			return false
 		}
 	}
 
-	return containers, true
+	return true
 }
 
 func execStart(cmd *cobra.Command, args []string) {
-	_, ok := shouldRun(args)
-	if !ok {
+	if ok := shouldRun(args); !ok {
 		return
+	}
+
+	// If we're forcing, we want to cleanup first
+	if force {
+		// Run the stop command
+		execStop(cmd, args)
 	}
 
 	configs := carbon.Configurations("../", 2) // FIXME: Don't hardcode this

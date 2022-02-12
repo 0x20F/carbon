@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"co2/docker"
+	"co2/logger"
 	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -29,8 +31,36 @@ func execShow(cmd *cobra.Command, args []string) {
 
 func showRunning() {
 	containers := docker.RunningContainers()
+	table := logger.NewTable(7)
+
+	table.Header(
+		"KEY",
+		"NAME",
+		"ID",
+		"IMAGE",
+		"PORTS",
+		"CREATED",
+		"STATUS",
+	)
 
 	for key, container := range containers {
-		fmt.Println(key, container.Names[0], container.ID, container.Image, container.Status, container.Created)
+		// Turn the array of ports into a string
+		ports := []string{}
+
+		for _, port := range container.Ports {
+			ports = append(ports, fmt.Sprintf("%d/%s", port.PublicPort, port.Type))
+		}
+
+		table.AddRow(
+			key,
+			container.Names[0],
+			container.ID[:7],
+			container.Image,
+			strings.Join(ports, ", "),
+			fmt.Sprint(container.Created),
+			container.Status,
+		)
 	}
+
+	table.Display()
 }

@@ -33,6 +33,9 @@ func showRunning() {
 	containers := docker.RunningContainers()
 	table := logger.NewTable(7)
 
+	fmt.Println()
+	logger.Info("RUN", "total running containers:", fmt.Sprint(len(containers)))
+
 	table.Header(
 		"KEY",
 		"NAME",

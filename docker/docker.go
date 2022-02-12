@@ -22,7 +22,7 @@ func wrapper() *impl {
 func CustomWrapper(docker DockerWrapper) *impl {
 	once.Do(func() {
 		instance = &impl{
-			docker: &Wrapper{},
+			docker: docker,
 		}
 	})
 

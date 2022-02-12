@@ -9,6 +9,7 @@ require (
 )
 
 require (
+	github.com/4khara/replica v1.0.0 // indirect
 	github.com/Microsoft/go-winio v0.4.17 // indirect
 	github.com/containerd/containerd v1.5.9 // indirect
 	github.com/docker/distribution v2.8.0+incompatible // indirect

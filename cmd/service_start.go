@@ -56,7 +56,6 @@ func execStart(cmd *cobra.Command, args []string) {
 
 	// If we're forcing, we want to cleanup first
 	if force {
-		// Run the stop command
 		execStop(cmd, args)
 	}
 
@@ -89,8 +88,6 @@ func execStart(cmd *cobra.Command, args []string) {
 	channel := make(chan bool)
 	go compose.Save(channel)
 
-	<-channel
-
 	// Build the command
 	command := builder.DockerComposeCommand().
 		File(compose.Path()).
@@ -98,6 +95,8 @@ func execStart(cmd *cobra.Command, args []string) {
 		Background().
 		Up().
 		Build()
+
+	<-channel
 
 	runner.Execute(command)
 

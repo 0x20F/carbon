@@ -14,7 +14,6 @@ func RunningContainers() map[string]dockerTypes.Container {
 
 	for _, container := range containers {
 		key := helpers.Hash(container.Image+container.Names[0], 4)
-
 		parsed[key] = container
 	}
 

@@ -101,6 +101,7 @@ func execStart(cmd *cobra.Command, args []string) {
 			"`--force` flag is set, stopping all provided services:",
 			strings.Join(args, ", "),
 		)
+
 		execStop(cmd, args)
 	}
 
@@ -121,8 +122,11 @@ func execStart(cmd *cobra.Command, args []string) {
 	printer.Extra(printer.Green, "Saving compose file to `"+compose.Path()+"`")
 	channel := make(chan bool)
 	go compose.Save(channel)
+	go containerize(channel, compose)
+	<-channel
 
-	// Build the command
+	// Execute the compose command
+	printer.Extra(printer.Green, "Executing `docker compose` command on the new file\n")
 	command := builder.DockerComposeCommand().
 		File(compose.Path()).
 		Service(strings.Join(args, " ")).
@@ -130,13 +134,8 @@ func execStart(cmd *cobra.Command, args []string) {
 		Up().
 		Build()
 
-	<-channel
-
-	printer.Extra(printer.Green, "Executing `docker compose` command on the new file\n")
 	runner.Execute(command)
-	go containerize(channel, compose)
 
-	<-channel
 }
 
 // Creates container types for each of the provided services

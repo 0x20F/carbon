@@ -46,7 +46,7 @@ func execStop(cmd *cobra.Command, args []string) {
 		// for each compose file
 		command := builder.DockerComposeCommand().
 			File(composeFile[0].ComposeFile).
-			Down()
+			Stop()
 
 		for _, container := range composeFile {
 			command.Service(container.Name)

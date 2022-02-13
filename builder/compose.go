@@ -60,6 +60,18 @@ func (c *DockerComposeCommandBuilder) Down() *DockerComposeCommandBuilder {
 	return c
 }
 
+func (c *DockerComposeCommandBuilder) Stop() *DockerComposeCommandBuilder {
+	segment := Segment{
+		Priority: 999,
+		Key:      "stop",
+		Value:    "",
+	}
+
+	c.Unique[segment.Priority] = segment
+
+	return c
+}
+
 func (c *DockerComposeCommandBuilder) Restart() *DockerComposeCommandBuilder {
 	segment := Segment{
 		Priority: 999,

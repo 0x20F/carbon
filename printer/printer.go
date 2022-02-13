@@ -29,7 +29,7 @@ var (
 			Foreground(lipgloss.Color("#f4f4f4"))
 
 	extraStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#eaeaea"))
+			Foreground(lipgloss.Color("#aaaaaa"))
 
 	indicator = lipgloss.NewStyle().
 			Foreground(lipgloss.Color(Red))

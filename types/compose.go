@@ -67,7 +67,7 @@ func (c *ComposeFile) Path() string {
 // This accepts a channel since it might be something that needs
 // to happen but we don't really care about the result as long as
 // it works so we can turn it into a goroutine instead.
-func (c *ComposeFile) Save(finished chan bool) {
+func (c *ComposeFile) Save() {
 	contents, err := yaml.Marshal(c)
 	if err != nil {
 		panic(err)
@@ -79,6 +79,4 @@ func (c *ComposeFile) Save(finished chan bool) {
 	if err != nil {
 		panic(err)
 	}
-
-	finished <- true
 }

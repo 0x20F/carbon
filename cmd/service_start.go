@@ -168,7 +168,7 @@ func containerize(channel chan bool, compose types.ComposeFile) {
 			defer wg.Done()
 
 			// Save the container
-			database.InsertContainer(container)
+			database.AddContainer(container)
 		}(container)
 	}
 

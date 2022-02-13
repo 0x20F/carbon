@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"os"
+	"path/filepath"
 	"runtime"
 )
 
@@ -29,4 +30,14 @@ func ComposeDir() string {
 	}
 
 	return home + "/.carbon"
+}
+
+func ExpandPath(path string) string {
+	// Turn relative into absolute
+	abs, err := filepath.Abs(path)
+	if err != nil {
+		panic(err)
+	}
+
+	return abs
 }

@@ -22,7 +22,7 @@ func TestTableCreationIfNotExists(t *testing.T) {
 	defer close()
 
 	// Insert a new container
-	InsertContainer(types.Container{})
+	AddContainer(types.Container{})
 }
 
 func TestContainerInsert(t *testing.T) {
@@ -33,9 +33,9 @@ func TestContainerInsert(t *testing.T) {
 	defer close()
 
 	// Insert a new container
-	InsertContainer(types.Container{})
-	InsertContainer(types.Container{})
-	InsertContainer(types.Container{})
+	AddContainer(types.Container{})
+	AddContainer(types.Container{})
+	AddContainer(types.Container{})
 
 	// Get all the containers
 	containers := Containers()
@@ -54,9 +54,9 @@ func TestContainerDelete(t *testing.T) {
 	defer close()
 
 	// Insert a new container
-	InsertContainer(types.Container{Name: "test1"})
-	InsertContainer(types.Container{Name: "test2"})
-	InsertContainer(types.Container{Name: "test3"})
+	AddContainer(types.Container{Name: "test1"})
+	AddContainer(types.Container{Name: "test2"})
+	AddContainer(types.Container{Name: "test3"})
 
 	// Get all the containers
 	containers := Containers()

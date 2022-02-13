@@ -14,6 +14,7 @@ const (
 	Green  Color = "#bee38d"
 	Red    Color = "#ff5252"
 	Yellow Color = "#f8c76a"
+	Grey   Color = "#7e8285"
 )
 
 var (

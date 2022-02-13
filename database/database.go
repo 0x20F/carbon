@@ -30,6 +30,13 @@ func Get() (*sql.DB, func() error) {
 			compose_file VARCHAR(64),
 			created_at DATETIME default CURRENT_TIMESTAMP
 		);
+
+		CREATE TABLE IF NOT EXISTS stores (
+			id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+			uid VARCHAR(64),
+			path VARCHAR(64),
+			created_at DATETIME default CURRENT_TIMESTAMP
+		);
 		`
 
 	_, err = db.Exec(sql)

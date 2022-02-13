@@ -19,4 +19,5 @@ func Execute() error {
 func init() {
 	rootCmd.AddCommand(serviceCmd)
 	rootCmd.AddCommand(showCmd)
+	rootCmd.AddCommand(storeCmd)
 }

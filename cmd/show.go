@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"co2/database"
 	"co2/docker"
 	"co2/printer"
 	"fmt"
@@ -12,6 +13,7 @@ import (
 
 var (
 	running bool
+	stores  bool
 
 	showCmd = &cobra.Command{
 		Use:   "show",
@@ -25,11 +27,16 @@ var (
 
 func init() {
 	showCmd.Flags().BoolVarP(&running, "running", "r", false, "show all currently running containers")
+	showCmd.Flags().BoolVarP(&stores, "stores", "s", false, "show all registered stores")
 }
 
 func execShow(cmd *cobra.Command, args []string) {
 	if running {
 		showRunning()
+	}
+
+	if stores {
+		showStores()
 	}
 }
 
@@ -70,6 +77,34 @@ func showRunning() {
 			fadedStyle.Render(strings.Join(ports, ", ")),
 			fadedStyle.Render(fmt.Sprint(container.Created)),
 			fadedStyle.Render(container.Status),
+		)
+	}
+
+	table.Display()
+}
+
+func showStores() {
+	stores := database.Stores()
+
+	if len(stores) == 0 {
+		printer.Info(printer.Grey, "STORE", "No registered stores", "")
+		return
+	}
+
+	table := printer.NewTable(3)
+	printer.Info(printer.Grey, "STORE", "total registered stores:", fmt.Sprint(len(stores)))
+
+	table.Header(
+		"KEY",
+		"PATH",
+		"DATE",
+	)
+
+	for _, store := range stores {
+		table.Row(
+			store.Uid,
+			store.Path,
+			fadedStyle.Render(fmt.Sprint(store.CreatedAt)),
 		)
 	}
 

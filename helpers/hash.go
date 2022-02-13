@@ -9,7 +9,7 @@ import (
 
 // Generate a unique hash for a given string.
 //
-// The reason we're running FNV here is for speed, more uniqueness
+// The reason we're running FNV here is for speed. More uniqueness
 // might happen with something like md5 but that was once created for
 // cryptographic purposes which means the speed was never of focus
 // when developing it.

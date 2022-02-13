@@ -60,34 +60,8 @@ func shouldRun(provided []string) bool {
 	return true
 }
 
-func execStart(cmd *cobra.Command, args []string) {
-	if ok := shouldRun(args); !ok {
-		return
-	}
-
-	// If we're forcing, we want to cleanup first
-	if force {
-		printer.Info(
-			printer.Yellow,
-			"WARN",
-			"`--force` flag is set, stopping all provided services:",
-			strings.Join(args, ", "),
-		)
-		execStop(cmd, args)
-	}
-
-	printer.Info(
-		printer.Green,
-		"START",
-		"Starting provided services:",
-		strings.Join(args, ", "),
-	)
-	printer.Extra(printer.Green, "Looking through the store")
-
-	configs := carbon.Configurations("../", 2) // FIXME: Don't hardcode this
+func generateComposeFile(args []string, configs types.CarbonConfig) types.ComposeFile {
 	choices := types.CarbonConfig{}
-
-	printer.Extra(printer.Green, "Generating compose file")
 
 	for _, service := range args {
 		if _, ok := configs[service]; !ok {
@@ -111,9 +85,40 @@ func execStart(cmd *cobra.Command, args []string) {
 		compose.Services[service.Name] = service.FullContents
 	}
 
-	printer.Extra(printer.Green, "Saving compose file at `"+compose.Path()+"`")
+	return compose
+}
+
+func execStart(cmd *cobra.Command, args []string) {
+	if ok := shouldRun(args); !ok {
+		return
+	}
+
+	// If we're forcing, we want to cleanup first
+	if force {
+		printer.Info(
+			printer.Yellow,
+			"WARN",
+			"`--force` flag is set, stopping all provided services:",
+			strings.Join(args, ", "),
+		)
+		execStop(cmd, args)
+	}
+
+	printer.Info(
+		printer.Green,
+		"START",
+		"Starting provided services:",
+		strings.Join(args, ", "),
+	)
+
+	printer.Extra(printer.Green, "Looking through the store")
+	configs := carbon.Configurations("../", 2) // FIXME: Don't hardcode this
+
+	printer.Extra(printer.Green, "Generating compose file")
+	compose := generateComposeFile(args, configs)
 
 	// Save the compose file
+	printer.Extra(printer.Green, "Saving compose file to `"+compose.Path()+"`")
 	channel := make(chan bool)
 	go compose.Save(channel)
 

@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"co2/docker"
-	"co2/logger"
+	"co2/printer"
 	"fmt"
 	"strings"
 
@@ -35,10 +35,10 @@ func execShow(cmd *cobra.Command, args []string) {
 
 func showRunning() {
 	containers := docker.RunningContainers()
-	table := logger.NewTable(7)
+	table := printer.NewTable(7)
 
 	fmt.Println()
-	logger.Info("RUN", "total running containers:", fmt.Sprint(len(containers)))
+	printer.Info(printer.Cyan, "RUN", "total running containers:", fmt.Sprint(len(containers)))
 
 	table.Header(
 		"KEY",
@@ -58,7 +58,7 @@ func showRunning() {
 			ports = append(ports, fmt.Sprintf("%d/%s", port.PublicPort, port.Type))
 		}
 
-		table.AddRow(
+		table.Row(
 			key,
 			container.Names[0],
 			container.ID[:7],

@@ -1,4 +1,4 @@
-package logger
+package printer
 
 import (
 	"testing"
@@ -11,9 +11,9 @@ func TestTableApi(t *testing.T) {
 
 	table.Header("Header 1", "Header 2", "Header 3")
 
-	table.AddRow("Row 1", "Row 2", "Row 3")
-	table.AddRow("Row 4", "Row 5", "Row 6")
-	table.AddRow("Row 7", "A bit longer tho to test padding", "Row 9")
+	table.Row("Row 1", "Row 2", "Row 3")
+	table.Row("Row 4", "Row 5", "Row 6")
+	table.Row("Row 7", "A bit longer tho to test padding", "Row 9")
 
 	table.Display()
 }

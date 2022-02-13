@@ -30,6 +30,12 @@ func init() {
 	startCmd.Flags().BoolVarP(&force, "force", "f", false, help)
 }
 
+// Checks whether or not the containers are already
+// in the database. If they are, we don't want to
+// start them again.
+//
+// If the force flag is provided, this will always return
+// true./
 func shouldRun(provided []string) bool {
 	if force {
 		return true

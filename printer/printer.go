@@ -1,9 +1,17 @@
-package logger
+package printer
 
 import (
 	"fmt"
 
 	"github.com/charmbracelet/lipgloss"
+)
+
+type Color string
+
+const (
+	// ANSI color codes
+	Cyan  Color = "36"
+	Green Color = "32"
 )
 
 var (
@@ -18,8 +26,8 @@ var (
 			Foreground(lipgloss.Color("#f4f4f4"))
 )
 
-func Info(title string, info string, highlight string) {
-	headerStyle.Background(lipgloss.Color("#00ccff"))
+func Info(color Color, title string, info string, highlight string) {
+	headerStyle.Background(lipgloss.Color(color))
 
 	fmt.Println(
 		headerStyle.Render(fmt.Sprintf(" %s ", title)),

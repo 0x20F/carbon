@@ -76,8 +76,18 @@ func execStart(cmd *cobra.Command, args []string) {
 		execStop(cmd, args)
 	}
 
+	printer.Info(
+		printer.Green,
+		"START",
+		"Starting provided services:",
+		strings.Join(args, ", "),
+	)
+	printer.Extra(printer.Green, "Looking through the store")
+
 	configs := carbon.Configurations("../", 2) // FIXME: Don't hardcode this
 	choices := types.CarbonConfig{}
+
+	printer.Extra(printer.Green, "Generating compose file")
 
 	for _, service := range args {
 		if _, ok := configs[service]; !ok {
@@ -101,6 +111,8 @@ func execStart(cmd *cobra.Command, args []string) {
 		compose.Services[service.Name] = service.FullContents
 	}
 
+	printer.Extra(printer.Green, "Saving compose file at `"+compose.Path()+"`")
+
 	// Save the compose file
 	channel := make(chan bool)
 	go compose.Save(channel)
@@ -115,8 +127,8 @@ func execStart(cmd *cobra.Command, args []string) {
 
 	<-channel
 
+	printer.Extra(printer.Green, "Executing `docker compose` command on the new file\n")
 	runner.Execute(command)
-
 	go containerize(channel, compose)
 
 	<-channel

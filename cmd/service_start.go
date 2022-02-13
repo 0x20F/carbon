@@ -5,9 +5,9 @@ import (
 	"co2/carbon"
 	"co2/database"
 	"co2/helpers"
+	"co2/printer"
 	"co2/runner"
 	"co2/types"
-	"fmt"
 	"strings"
 	"sync"
 
@@ -26,7 +26,7 @@ var (
 )
 
 func init() {
-	help := "Force the start of the service. Even if it's already in the database. This will delete the old ones."
+	help := "Force the start of the service. This will delete the old ones before starting."
 	startCmd.Flags().BoolVarP(&force, "force", "f", false, help)
 }
 
@@ -47,7 +47,12 @@ func shouldRun(provided []string) bool {
 	// If an of the provided containers is in the database, quit
 	for _, container := range containers {
 		if helpers.Contains(provided, container.Name) {
-			fmt.Printf("%s is already in the database\n", container.Name)
+			printer.Error("ERROR", "service already running:", container.Name)
+			printer.Extra(
+				printer.Red,
+				"Try running `co2 stop` first",
+				"Use the `--force` flag to force the start",
+			)
 			return false
 		}
 	}
@@ -62,6 +67,12 @@ func execStart(cmd *cobra.Command, args []string) {
 
 	// If we're forcing, we want to cleanup first
 	if force {
+		printer.Info(
+			printer.Yellow,
+			"WARN",
+			"`--force` flag is set, stopping all provided services:",
+			strings.Join(args, ", "),
+		)
 		execStop(cmd, args)
 	}
 

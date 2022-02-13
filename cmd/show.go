@@ -35,9 +35,13 @@ func execShow(cmd *cobra.Command, args []string) {
 
 func showRunning() {
 	containers := docker.RunningContainers()
-	table := printer.NewTable(7)
 
-	fmt.Println()
+	if len(containers) == 0 {
+		printer.Info(printer.Cyan, "RUN", "No running containers", "")
+		return
+	}
+
+	table := printer.NewTable(7)
 	printer.Info(printer.Cyan, "RUN", "total running containers:", fmt.Sprint(len(containers)))
 
 	table.Header(

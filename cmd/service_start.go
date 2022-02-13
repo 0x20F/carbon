@@ -65,6 +65,7 @@ func generateComposeFile(args []string, configs types.CarbonConfig) types.Compos
 
 	for _, service := range args {
 		if _, ok := configs[service]; !ok {
+			printer.Extra(printer.Red, "No carbon file found for: "+service)
 			continue
 		}
 
@@ -113,10 +114,27 @@ func execStart(cmd *cobra.Command, args []string) {
 	)
 
 	printer.Extra(printer.Green, "Looking through the store")
-	configs := carbon.Configurations("../", 2) // FIXME: Don't hardcode this
+	stores := database.Stores()
+	configs := types.CarbonConfig{}
+
+	// For each store
+	for _, store := range stores {
+		// Find all carbon files in the store
+		files := carbon.Configurations(store.Path, 2)
+
+		// For each carbon file
+		for k, v := range files {
+			configs[k] = v
+		}
+	}
 
 	printer.Extra(printer.Green, "Generating compose file")
 	compose := generateComposeFile(args, configs)
+
+	if len(compose.Services) == 0 {
+		printer.Extra(printer.Red, "Aborting since no services were found in the provided stores")
+		return
+	}
 
 	// Save the compose file
 	printer.Extra(printer.Green, "Saving compose file to `"+compose.Path()+"`")

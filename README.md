@@ -35,7 +35,7 @@ Read more about the commands at the [Documentation Section](#documentation)
 <br/>
 
 ## Documentation
-> **Note**: This program does have helpful wrapper commands for common docker things, however, it's not just that. Therefore it also contains more features that you may or may not choose to use. If you see the ⚛ next to something, it's carbon specific and you probably shouldn't care if docker is all you want.
+> **Note**: This program does have helpful wrapper commands for common docker things, however, it's not just that. Therefore it also contains more features that you may or may not choose to use. If you see the 📦 next to something, it's carbon specific and you probably shouldn't care if docker is all you want.
 
 > **Double Note**: Keep in mind that all these options also exist in the program help menu which can be accessed by passing the `-h` param to any command or subcommand.
 
@@ -46,8 +46,8 @@ Let's start then. Here are all the command wrappers (and commands related to uni
 ### `co2 show`
 This one handles multiple things depending on the set flag:
 - `-r` Will show **all** the running docker containers.
-- ⚛ `-a` Will show all the `carbon.yml` service files that are available for use.
-- ⚛ `-s` Shows all the _stores_ that carbon has access to
+- 📦 `-a` Will show all the `carbon.yml` service files that are available for use.
+- 📦 `-s` Shows all the _stores_ that carbon has access to
 
 > Pro Tip: These can all be used together
 
@@ -55,6 +55,7 @@ This one handles multiple things depending on the set flag:
 
 ### `co2 shell`
 This one will build a docker command that gets you a shell into whatever container or service you specified.
+Do keep in mind, however, that since this **only returns** the composed command you still have to run it somehow.
 Example:
 ```bash
 $ co2 shell my-container

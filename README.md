@@ -68,3 +68,23 @@ $ docker exec -it my-container /bin/bash
 #### Valid Modifiers
 - `-sh` To get `/bin/sh` instead of `bash`
 - `-c` To execute a custom shell (or command if you really wanna) as in `co2 shell -c /bin/but-something-else my-container`
+
+<br/>
+
+### 📦 `co2 store`
+On its own, this is useless, however with the 2 provided subcommands it does something.
+
+- `add` will add a new directory(store) for carbon to look in when searching for `carbon.yml` files. It comes packed with 2 whole parameters:
+    - `-s` The path for the store, could be absolute (`/home/whatever/you`) or relative (`../../../sure`)
+    - `-i` A unique ID for the store you're adding. If not provided, one will be generated automatically so don't worry.
+    ```bash
+    # Example Usage
+    $ co2 store add -s ../ -i unique-store
+    ```
+- `remove` oh gee I wonder what this one does... All it takes is that unique ID that you maybe defined, but definitely got with the `add` command.
+    ```bash
+    $ co2 store remove unique-store
+    ```
+> Pro Tip: The remove command can take any number of store IDs
+
+> Double Dip Tip: You can list all the stores with the [show command](#co2-show)

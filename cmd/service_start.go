@@ -100,23 +100,21 @@ func extract(args []string) types.CarbonConfig {
 		}
 
 		found := configs[service]
-		if _, ok := found.FullContents["depends_on"]; ok {
-			omitted := false
+		omitted := false
 
-			for _, dep := range found.FullContents["depends_on"].([]interface{}) {
-				if helpers.Contains(args, dep.(string)) {
-					continue
-				}
-
-				message := fmt.Sprintf("'%s' depends on '%s' but '%s' is not provided", service, dep.(string), dep.(string))
-				printer.Extra(printer.Cyan, message)
-
-				omitted = true
-			}
-
-			if omitted {
+		for _, dep := range found.DependsOn {
+			if helpers.Contains(args, dep) {
 				continue
 			}
+
+			message := fmt.Sprintf("'%s' depends on '%s' but '%s' is not provided", service, dep, dep)
+			printer.Extra(printer.Cyan, message)
+
+			omitted = true
+		}
+
+		if omitted {
+			continue
 		}
 
 		container := service + "-" + helpers.RandomAlphaString(10)

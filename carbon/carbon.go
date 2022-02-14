@@ -60,9 +60,17 @@ func Configurations(path string, depth int) types.CarbonConfig {
 		documents := bytes.Split(content, []byte("---"))
 
 		for _, doc := range documents {
-			err := yaml.Unmarshal(doc, &config)
+			temp := types.CarbonConfig{}
+
+			err := yaml.Unmarshal(doc, &temp)
 			if err != nil {
 				panic(err)
+			}
+
+			// Inject the path into the config
+			for k, v := range temp {
+				v.Path = file
+				config[k] = v
 			}
 
 			err = yaml.Unmarshal(doc, &values)

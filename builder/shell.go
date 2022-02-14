@@ -16,30 +16,6 @@ func (c *DockerShellCommandBuilder) Container(container string) *DockerShellComm
 	return c
 }
 
-func (c *DockerShellCommandBuilder) Bash() *DockerShellCommandBuilder {
-	segment := Segment{
-		Priority: 999,
-		Key:      "bash",
-		Value:    "",
-	}
-
-	c.Unique[segment.Priority] = segment
-
-	return c
-}
-
-func (c *DockerShellCommandBuilder) Sh() *DockerShellCommandBuilder {
-	segment := Segment{
-		Priority: 999,
-		Key:      "sh",
-		Value:    "",
-	}
-
-	c.Unique[segment.Priority] = segment
-
-	return c
-}
-
 func (c *DockerShellCommandBuilder) Shell(shell string) *DockerShellCommandBuilder {
 	segment := Segment{
 		Priority: 999,

@@ -5,7 +5,7 @@ import "testing"
 func TestShellCommand(t *testing.T) {
 	cmd := DockerShellCommand().
 		Container("my-fancy-name").
-		Bash().
+		Shell("bash").
 		Build()
 
 	expected := "docker exec -it my-fancy-name bash"
@@ -18,24 +18,11 @@ func TestShellCommand(t *testing.T) {
 func TestShellCommandOverwrites(t *testing.T) {
 	cmd := DockerShellCommand().
 		Container("my-fancy-name").
-		Bash().
-		Sh().
+		Shell("aaa").
+		Shell("bbb").
 		Build()
 
-	expected := "docker exec -it my-fancy-name sh"
-
-	if cmd != expected {
-		t.Errorf("Expected %s, got %s", expected, cmd)
-	}
-}
-
-func TestShellCommandCustomShell(t *testing.T) {
-	cmd := DockerShellCommand().
-		Container("my-fancy-name").
-		Shell("/bin/zsh").
-		Build()
-
-	expected := "docker exec -it my-fancy-name /bin/zsh"
+	expected := "docker exec -it my-fancy-name bbb"
 
 	if cmd != expected {
 		t.Errorf("Expected %s, got %s", expected, cmd)

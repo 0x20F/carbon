@@ -12,8 +12,9 @@ import (
 )
 
 var (
-	running bool
-	stores  bool
+	running   bool
+	stores    bool
+	available bool
 
 	showCmd = &cobra.Command{
 		Use:   "show",
@@ -28,6 +29,7 @@ var (
 func init() {
 	showCmd.Flags().BoolVarP(&running, "running", "r", false, "show all currently running containers")
 	showCmd.Flags().BoolVarP(&stores, "stores", "s", false, "show all registered stores")
+	showCmd.Flags().BoolVarP(&available, "carbon", "c", false, "show all available carbon services")
 }
 
 func execShow(cmd *cobra.Command, args []string) {
@@ -37,6 +39,10 @@ func execShow(cmd *cobra.Command, args []string) {
 
 	if stores {
 		showStores()
+	}
+
+	if available {
+		showAvailable()
 	}
 }
 
@@ -105,6 +111,34 @@ func showStores() {
 			store.Uid,
 			store.Path,
 			fadedStyle.Render(fmt.Sprint(store.CreatedAt)),
+		)
+	}
+
+	table.Display()
+}
+
+func showAvailable() {
+	services := services()
+
+	if len(services) == 0 {
+		printer.Info(printer.Grey, "CARBON", "No available carbon services", "")
+		return
+	}
+
+	table := printer.NewTable(3)
+	printer.Info(printer.Grey, "CARBON", "total available carbon services:", fmt.Sprint(len(services)))
+
+	table.Header(
+		"NAME",
+		"IMAGE",
+		"PATH",
+	)
+
+	for name, service := range services {
+		table.Row(
+			name,
+			service.Image,
+			fmt.Sprintf("...%s", service.Path[len(service.Path)-30:]),
 		)
 	}
 

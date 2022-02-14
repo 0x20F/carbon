@@ -65,8 +65,6 @@ func shouldRun(provided []string) bool {
 // Looks through all the registered stores and returns all
 // the carbon services that are defined within those stores.
 func services() types.CarbonConfig {
-	printer.Extra(printer.Green, "Looking through the store")
-
 	stores := database.Stores()
 	configs := types.CarbonConfig{}
 
@@ -90,6 +88,8 @@ func services() types.CarbonConfig {
 // If no file is found for a specific service, it will output
 // some information to stdout and continue to the next one.
 func extract(args []string) types.CarbonConfig {
+	printer.Extra(printer.Green, "Looking through the store")
+
 	choices := types.CarbonConfig{}
 	configs := services()
 

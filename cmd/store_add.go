@@ -56,5 +56,6 @@ func execAdd(cmd *cobra.Command, args []string) {
 		printer.Green,
 		"The id for the new store is: "+id,
 		"Use `co2 show --stores` to see all id's",
+		"Verify all your services are found with `co2 show -c`",
 	)
 }

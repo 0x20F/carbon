@@ -5,6 +5,7 @@ import (
 	"co2/docker"
 	"co2/printer"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
@@ -125,6 +126,14 @@ func showAvailable() {
 		return
 	}
 
+	keys := make([]string, 0, len(services))
+
+	for key := range services {
+		keys = append(keys, key)
+	}
+
+	sort.Strings(keys)
+
 	table := printer.NewTable(3)
 	printer.Info(printer.Grey, "CARBON", "total available carbon services:", fmt.Sprint(len(services)))
 
@@ -134,11 +143,13 @@ func showAvailable() {
 		"PATH",
 	)
 
-	for name, service := range services {
+	for _, name := range keys {
+		service := services[name]
+
 		table.Row(
 			name,
 			service.Image,
-			fmt.Sprintf("...%s", service.Path[len(service.Path)-30:]),
+			fadedStyle.Render(fmt.Sprintf("...%s", service.Path[len(service.Path)-30:])),
 		)
 	}
 

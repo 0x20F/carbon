@@ -4,9 +4,10 @@ import (
 	"co2/builder"
 	"co2/database"
 	"co2/helpers"
+	"co2/printer"
 	"co2/runner"
 	"co2/types"
-	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/spf13/cobra"
@@ -27,6 +28,13 @@ var stopCmd = &cobra.Command{
 // While that's going on it will also make sure to remove the containers
 // from the database since they are technically not running anymore.
 func execStop(cmd *cobra.Command, args []string) {
+	printer.Info(
+		printer.Green,
+		"STOP",
+		"Stopping provided services:",
+		strings.Join(args, ", "),
+	)
+
 	containers := database.Containers()
 	grouped := map[string][]types.Container{}
 
@@ -37,11 +45,16 @@ func execStop(cmd *cobra.Command, args []string) {
 		}
 	}
 
+	if len(grouped) == 0 {
+		printer.Extra(printer.Cyan, "None of the provided services are running", "Ignoring")
+		return
+	}
+
 	var wg sync.WaitGroup
 
 	// Stop all the containers in each group and
 	// delete them from the database
-	for _, composeFile := range grouped {
+	for path, composeFile := range grouped {
 		// Build the compose down command with all services
 		// for each compose file
 		command := builder.DockerComposeCommand().
@@ -60,9 +73,9 @@ func execStop(cmd *cobra.Command, args []string) {
 
 		// Run the command even if the database hasn't fully
 		// updated yet. It's independent.
+		printer.Extra(printer.Green, "Executing stop command for compose file: "+path)
 		runner.Execute(command.Build())
 	}
 
 	wg.Wait()
-	fmt.Println("Stopped all required containers!")
 }

@@ -23,7 +23,6 @@ var (
 
 func init() {
 	shellCmd.Flags().BoolVarP(&sh, "sh", "s", false, "Use sh")
-
 	shellCmd.Flags().StringVarP(&custom, "custom", "c", "", "Use custom shell")
 }
 

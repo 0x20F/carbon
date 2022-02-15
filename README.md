@@ -45,6 +45,10 @@ Let's start then. Here are all the command wrappers (and commands related to uni
 
 <br/>
 
+### 📦 `carbon.yml`
+
+<br/>
+
 ### `co2 show`
 This one handles multiple things depending on the set flag:
 - `-r` Will show **all** the running docker containers.
@@ -71,10 +75,8 @@ $ docker exec -it my-container /bin/bash
 
 <br/>
 
-### 📦 `co2 store`
+### 📦 `co2 store add`
 On its own, this is useless, however with the 2 provided subcommands it does something.
-
-#### add
 This will _add_ a new directory(store) for carbon to look in when searching for `carbon.yml` files. It comes packed with 2 whole parameters:
 - `-s` The path for the store, could be absolute (`/home/whatever/you`) or relative (`../../../sure`)
 - `-i` A unique ID for the store you're adding. If not provided, one will be generated automatically so don't worry.
@@ -82,11 +84,42 @@ This will _add_ a new directory(store) for carbon to look in when searching for 
 # Example Usage
 $ co2 store add -s ../ -i unique-store
 ```
-> Double Dip Tip: You can list all the stores with the [show command](#co2-show)
+> Pro Tip: You can list all the stores with the [show command](#co2-show)
 
-#### remove
-Oh gee I wonder what this one does... All it takes is that unique ID that you maybe defined, but definitely got with the `add` command.
+<br/>
+
+### 📦 `co2 store remove`
+The opposite of [add](#%F0%9F%93%A6-co2-store-add) as you'd expect. All it takes is that unique ID that you maybe defined, but definitely got with the `add` command.
 ```bash
 $ co2 store remove unique-store
 ```
 > Pro Tip: The remove command can take any number of store IDs
+
+<br/>
+
+### 📦 `co2 service start`
+Looks through all the registered stores (see [add](#%F0%9F%93%A6-co2-store-add) on how to register stores) and starts all of the provided services
+if they're found. 
+
+As an added bonus, if the service defines any other services it is dependent on, usually within the `depends_on` field in the configuration, it will make sure that
+those services are included in the provided list otherwise it'll abort and inform you that you're missing some important things.
+
+Example:
+```bash
+$ co2 service start A B C
+```
+> Note: The names you provide here are what you defined within your carbon.yml file
+
+If some of the provided services are already running but you'd like to stop them all and force a refresh, there's a flag for that:
+- `-f` forces a service start, meaning all provided services will be stopped before attempting to start them again.
+
+<br/>
+
+### 📦 `co2 service stop`
+Looks through the currently running **carbon** services and stops the provided ones.
+
+Example:
+```bash
+$ co2 service stop A B C
+```
+> Note: The names you provide here are what you defined within your carbon.yml file

@@ -139,6 +139,7 @@ $ docker exec -it my-container /bin/bash
 This will _add_ a new directory(store) for carbon to look in when searching for `carbon.yml` files. It comes packed with 2 whole parameters:
 - `-s` The path for the store, could be absolute (`/home/whatever/you`) or relative (`../../../sure`)
 - `-i` A unique ID for the store you're adding. If not provided, one will be generated automatically so don't worry.
+- `-e` A path to an environment file (of the `.env` variety). This will be passed along to all the service configurations in the given store when they start.
 ```bash
 # Example Usage
 $ co2 store add -s ../ -i unique-store

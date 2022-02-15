@@ -210,6 +210,10 @@ func containerize(channel chan bool, compose types.ComposeFile) {
 // If the force flag is provided, this will make sure to call
 // the stop command beforehand so that all the services we're
 // trying to start will start fresh.
+//
+// We also want to make sure that we tell the docker compose command
+// to run with any of the available environment files that might be
+// provided by the current store we are looking at.
 func start(cmd *cobra.Command, args []string) {
 	if ok := shouldRun(args); !ok {
 		return

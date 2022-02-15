@@ -10,11 +10,6 @@ func main() {
 	// Seed random for everything that needs it
 	rand.Seed(time.Now().UnixNano())
 
-	/*declarations := carbon.Configurations("../", 2)
-
-	data, _ := yaml.Marshal(declarations["intake"].FullContents)
-	fmt.Println(string(data))*/
-
+	// Execute the root cobra command
 	cmd.Execute()
-	//runner.Execute("docker container ls -aq")
 }

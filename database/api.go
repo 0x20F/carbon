@@ -4,6 +4,8 @@ import (
 	"co2/types"
 )
 
+// Gets all the containers currently registered in the database
+// and maps them to our own custom Container structure.
 func Containers() []types.Container {
 	db, _ := Get()
 
@@ -23,6 +25,8 @@ func Containers() []types.Container {
 	return containers
 }
 
+// Gets all the stores currently registered in the database
+// and maps them to our own custom Store structure.
 func Stores() []types.Store {
 	db, _ := Get()
 
@@ -42,6 +46,9 @@ func Stores() []types.Store {
 	return stores
 }
 
+// Adds a new container to the database.
+// And updates the ID of the provided container to match the
+// inserted one.
 func AddContainer(container types.Container) types.Container {
 	db, _ := Get()
 
@@ -58,6 +65,9 @@ func AddContainer(container types.Container) types.Container {
 	return container
 }
 
+// Adds a new store to the database.
+// And updates the ID of the provided store to match the
+// inserted one.
 func AddStore(store types.Store) types.Store {
 	db, _ := Get()
 
@@ -74,6 +84,8 @@ func AddStore(store types.Store) types.Store {
 	return store
 }
 
+// Deletes a container from the database and returns the
+// deleted ID.
 func DeleteContainer(container types.Container) int64 {
 	db, _ := Get()
 
@@ -89,6 +101,8 @@ func DeleteContainer(container types.Container) int64 {
 	return affect
 }
 
+// Deletes a store from the database and returns the
+// deleted ID.
 func DeleteStore(store types.Store) int64 {
 	db, _ := Get()
 

@@ -102,6 +102,11 @@ for multiple repositories that might live in the same directory. (Use the [store
 
 > Pro Tip: If you ever want more than one service defined in your file, you separate them using the yaml document separator `---`
 
+#### Stores
+In carbon, there's a concept called a _store_. This is, in simple terms, a directory in which carbon can look for `carbon.yml` files. Each store can have its own 
+`.env` file linked to it and it will pass it to all the services that are found within that store. The _store_ commands described below
+make it pretty clear how to make use of a store.
+
 <br/>
 
 ### `co2 show`
@@ -131,7 +136,6 @@ $ docker exec -it my-container /bin/bash
 <br/>
 
 ### 📦 `co2 store add`
-On its own, this is useless, however with the 2 provided subcommands it does something.
 This will _add_ a new directory(store) for carbon to look in when searching for `carbon.yml` files. It comes packed with 2 whole parameters:
 - `-s` The path for the store, could be absolute (`/home/whatever/you`) or relative (`../../../sure`)
 - `-i` A unique ID for the store you're adding. If not provided, one will be generated automatically so don't worry.

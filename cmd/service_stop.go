@@ -55,8 +55,6 @@ func execStop(cmd *cobra.Command, args []string) {
 	// Stop all the containers in each group and
 	// delete them from the database
 	for path, composeFile := range grouped {
-		// Build the compose down command with all services
-		// for each compose file
 		command := builder.DockerComposeCommand().
 			File(composeFile[0].ComposeFile).
 			Stop()

@@ -12,10 +12,13 @@ var (
 	}
 )
 
+// Starts the initial command
+// which in turn will start all the other commands.
 func Execute() error {
 	return rootCmd.Execute()
 }
 
+// Registers all subcommands
 func init() {
 	rootCmd.AddCommand(serviceCmd)
 	rootCmd.AddCommand(showCmd)

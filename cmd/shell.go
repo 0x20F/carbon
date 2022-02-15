@@ -21,17 +21,32 @@ var (
 	}
 )
 
+// Adds the required flags
 func init() {
 	shellCmd.Flags().BoolVarP(&sh, "sh", "s", false, "Use sh")
 	shellCmd.Flags().StringVarP(&custom, "custom", "c", "", "Use custom shell")
 }
 
+// Executes the command and makes sure that the
+// correct shell gets added to the built docker command.
+//
+// This will assume that /bin/bash is what you want most of
+// the time so that's the default shell.
+//
+// It only looks through the running containers, and is not
+// dependent of any carbon features since it runs on the
+// docker api.
+//
+// Running the command and returning an interactive shell is too
+// complex for now so the only thing this will do, if it manages
+// to compile the command is to print it to standard output so it
+// can be piped into something else.
 func execShell(cmd *cobra.Command, args []string) {
 	id := args[0]
-	shell := "bash" // Bash is the default shell
+	shell := "/bin/bash"
 
 	if sh {
-		shell = "sh"
+		shell = "/bin/sh"
 	}
 
 	if custom != "" {
@@ -41,13 +56,11 @@ func execShell(cmd *cobra.Command, args []string) {
 	// Get all containers
 	containers := docker.RunningContainers()
 
-	// Find the container with the provided id
 	for uid, container := range containers {
 		if uid != id {
 			continue
 		}
 
-		// Build the docker command
 		cmd := builder.DockerShellCommand().
 			Container(container.Names[0]).
 			Shell(shell).

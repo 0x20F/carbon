@@ -21,6 +21,9 @@ var (
 
 func init() {}
 
+// Looks through all the registered store UIDs
+// and removes all the ones that are registered
+// with the UIDs provided by the user.
 func execRemove(cmd *cobra.Command, args []string) {
 	stores := database.Stores()
 

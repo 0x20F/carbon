@@ -23,16 +23,22 @@ var (
 		Run:   execShow,
 	}
 
+	// Some data in the displayed tables might not be
+	// that important so we want it to have a faded color.
+	// Still visible, but less important.
 	fadedStyle = lipgloss.NewStyle().
 			Foreground(lipgloss.Color("#777777"))
 )
 
+// Adds all the required flags
 func init() {
 	showCmd.Flags().BoolVarP(&running, "running", "r", false, "show all currently running containers")
 	showCmd.Flags().BoolVarP(&stores, "stores", "s", false, "show all registered stores")
 	showCmd.Flags().BoolVarP(&available, "carbon", "c", false, "show all available carbon services")
 }
 
+// Checks what flags are provided and displays
+// the specific table representing each flag.
 func execShow(cmd *cobra.Command, args []string) {
 	if running {
 		showRunning()
@@ -47,6 +53,14 @@ func execShow(cmd *cobra.Command, args []string) {
 	}
 }
 
+// Shows all the running containers.
+//
+// Since this runs using the docker api, it's completely
+// independent of any carbon features, or even the
+// database so it's pretty fast.
+//
+// The resulting table should also contain the unique
+// id for the container generated from the name and the image.
 func showRunning() {
 	containers := docker.RunningContainers()
 
@@ -69,7 +83,6 @@ func showRunning() {
 	)
 
 	for key, container := range containers {
-		// Turn the array of ports into a string
 		ports := []string{}
 
 		for _, port := range container.Ports {
@@ -81,7 +94,7 @@ func showRunning() {
 			container.Names[0],
 			container.ID[:7],
 			container.Image,
-			fadedStyle.Render(strings.Join(ports, ", ")),
+			fadedStyle.Render(strings.Join(ports, ", ")), // Turn the array of ports into a string
 			fadedStyle.Render(fmt.Sprint(container.Created)),
 			fadedStyle.Render(container.Status),
 		)
@@ -90,6 +103,16 @@ func showRunning() {
 	table.Display()
 }
 
+// Shows all the registered carbon stores.
+//
+// It's not that complicated, thankfully.
+// Just a simple query to the database to fetch all
+// the currently registered stores and then display it
+// in a nicely formatted table.
+//
+// If the stores don't have an environment file set,
+// this will replace the value with 'undefined' in the
+// resulting table.
 func showStores() {
 	stores := database.Stores()
 
@@ -126,6 +149,14 @@ func showStores() {
 	table.Display()
 }
 
+// Shows all the available carbon services.
+//
+// This will display a table of all the defined carbon
+// services (carbon.yml) by looking through all of the stores,
+// and then looking through all the directories within each store.
+//
+// All the long paths are shortened so they don't occupy too
+// much screen space.
 func showAvailable() {
 	services := services()
 

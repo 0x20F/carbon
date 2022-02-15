@@ -27,6 +27,7 @@ var (
 	}
 )
 
+// Adds all the required flags
 func init() {
 	help := "Force the start of the service. This will delete the old ones before starting."
 	startCmd.Flags().BoolVarP(&force, "force", "f", false, help)
@@ -37,7 +38,7 @@ func init() {
 // start them again.
 //
 // If the force flag is provided, this will always return
-// true./
+// true.
 func shouldRun(provided []string) bool {
 	if force {
 		return true
@@ -64,18 +65,22 @@ func shouldRun(provided []string) bool {
 
 // Looks through all the registered stores and returns all
 // the carbon services that are defined within those stores.
+//
+// This will never to too deep into the stores when looking
+// for services since we want it to be fast. Usually a depth of 2
+// is enough.
+//
+// Each of the returned configurations will have the store
+// they belong to injected as well so they can retrieve
+// the required data if ever needed.
 func services() types.CarbonConfig {
 	stores := database.Stores()
 	configs := types.CarbonConfig{}
 
-	// For each store
 	for _, store := range stores {
-		// Find all carbon files in the store
 		files := carbon.Configurations(store.Path, 2)
 
-		// For each carbon file
 		for k, v := range files {
-			// Inject the Store into each config
 			v.Store = &store
 			configs[k] = v
 		}
@@ -89,6 +94,11 @@ func services() types.CarbonConfig {
 //
 // If no file is found for a specific service, it will output
 // some information to stdout and continue to the next one.
+//
+// If any of the user provided services are dependent on other
+// services but the other services aren't already provided, this will
+// inform the user about their error and ignore the service and move
+// onto the next one.
 func extract(args []string) types.CarbonConfig {
 	printer.Extra(printer.Green, "Looking through the store")
 
@@ -109,7 +119,7 @@ func extract(args []string) types.CarbonConfig {
 				continue
 			}
 
-			message := fmt.Sprintf("'%s' depends on '%s' but '%s' is not provided", service, dep, dep)
+			message := fmt.Sprintf("'%s' depends on '%s' but '%s' is not provided, ignoring.", service, dep, dep)
 			printer.Extra(printer.Cyan, message)
 
 			omitted = true
@@ -162,7 +172,7 @@ func compose(args []string) ([]string, types.ComposeFile, error) {
 		}
 	}
 
-	<-channel
+	<-channel // Wait for all jobs to finish
 	return envs, compose, nil
 }
 
@@ -173,7 +183,6 @@ func compose(args []string) ([]string, types.ComposeFile, error) {
 // Also saves all the containers to the database so that all required
 // information can be retrieved later if ever needed.
 func containerize(channel chan bool, compose types.ComposeFile) {
-	// Create container types for all services in the compose file
 	containers := []types.Container{}
 
 	for name, service := range compose.Services {
@@ -188,13 +197,13 @@ func containerize(channel chan bool, compose types.ComposeFile) {
 
 	var wg sync.WaitGroup
 
-	// Save all the containers
+	// Try saving it all async so it goes faster,
+	// we can do other things in the meantime if we ever need to.
 	for _, container := range containers {
 		wg.Add(1)
+
 		go func(container types.Container) {
 			defer wg.Done()
-
-			// Save the container
 			database.AddContainer(container)
 		}(container)
 	}

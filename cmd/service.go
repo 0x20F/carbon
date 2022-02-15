@@ -13,6 +13,8 @@ var (
 	}
 )
 
+// Adds the required subcommands since
+// this command does nothing on its own.
 func init() {
 	serviceCmd.AddCommand(startCmd)
 	serviceCmd.AddCommand(stopCmd)

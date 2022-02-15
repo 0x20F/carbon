@@ -21,12 +21,28 @@ var (
 	}
 )
 
+// Adds all the required flags
 func init() {
 	addCmd.Flags().StringVarP(&store, "store", "s", "", "The path to the store")
 	addCmd.Flags().StringVarP(&id, "id", "i", "", "The id of the store. If left empty, it will be generated")
 	addCmd.Flags().StringVarP(&env, "env", "e", "", "The environment file to use for this store. Should a path to the .env file.")
 }
 
+// Registers a new carbon store
+//
+// This won't register anything if the store is undefined, or the
+// provided store path is not a directory.
+//
+// This will also not register anytthing if the provided
+// environment file path is a directory and not a file.
+//
+// It will also generate a unique identifier based on the
+// store path so that it can be accessed easily later on
+// when deleting, as long as the user hasn't provided their
+// own identifier.
+//
+// If a store with an identical identifier exists already, it will
+// be deleted first. Dems the rules... No duplicates.
 func execAdd(cmd *cobra.Command, args []string) {
 	if store == "" || !helpers.IsDirectory(store) {
 		printer.Error("ERROR", "No store directory", "")
@@ -67,8 +83,7 @@ func execAdd(cmd *cobra.Command, args []string) {
 		Env:  environment,
 	}
 
-	// Try deleting the stores with the same ID if they exist
-	// before adding.
+	// Delete if it exists before adding again
 	database.DeleteStore(store)
 	database.AddStore(store)
 

@@ -10,6 +10,7 @@ var (
 	}
 )
 
+// Registers all subcommands
 func init() {
 	storeCmd.AddCommand(addCmd)
 	storeCmd.AddCommand(removeCmd)

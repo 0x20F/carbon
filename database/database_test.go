@@ -8,7 +8,7 @@ import (
 )
 
 func cleanup() {
-	err := helpers.DeleteFile("./carbon.db")
+	err := helpers.DeleteFile(helpers.DatabaseFile())
 	if err != nil {
 		log.Fatalf("Expected no error, got %s", err)
 	}

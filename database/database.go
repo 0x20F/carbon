@@ -1,6 +1,7 @@
 package database
 
 import (
+	"co2/helpers"
 	"database/sql"
 	"log"
 
@@ -20,7 +21,7 @@ func Get() (*sql.DB, func() error) {
 	}
 
 	// Try opening the database file
-	db, err := sql.Open("sqlite3", "./carbon.db")
+	db, err := sql.Open("sqlite3", helpers.DatabaseFile())
 	if err != nil {
 		log.Fatal(err)
 	}

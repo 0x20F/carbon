@@ -46,6 +46,25 @@ func ComposeDir() string {
 	return home + "/.carbon"
 }
 
+// Generates the path where the database file should be
+// stored.
+//
+// Since we don't want the file to be stored wherever the binary
+// is we have to store it somewhere else and the best place
+// is where all the other carbon related things are. In ~/.carbon.
+//
+// If the directory doesn't already exist when this gets called,
+// it will be created.
+func DatabaseFile() string {
+	home := UserHomeDir()
+
+	if _, err := os.Stat(home + "/.carbon"); os.IsNotExist(err) {
+		os.Mkdir(home+"/.carbon", 0755)
+	}
+
+	return home + "/.carbon/database.db"
+}
+
 // Turns a relative path into an absolute path.
 //
 // Meaning something like `./foo` will be

@@ -144,9 +144,10 @@ func extract(args []string) types.CarbonConfig {
 // the required values into all the containers within the compose
 // file.
 func compose(args []string) ([]string, types.ComposeFile, error) {
+	envs := []string{}
 	choices := extract(args)
 	if len(choices) == 0 {
-		return nil, types.ComposeFile{}, errors.New("no services found")
+		return envs, types.ComposeFile{}, errors.New("no services found")
 	}
 
 	printer.Extra(printer.Green, "Generating compose file")
@@ -165,8 +166,11 @@ func compose(args []string) ([]string, types.ComposeFile, error) {
 	go containerize(channel, compose)
 
 	// Find all the env files that should be given to the compose file
-	envs := []string{}
 	for _, service := range choices {
+		if service.Store.Env == "" {
+			continue
+		}
+
 		if !helpers.Contains(envs, service.Store.Uid) {
 			envs = append(envs, service.Store.Env)
 		}
@@ -266,6 +270,5 @@ func start(cmd *cobra.Command, args []string) {
 		command.EnvFile(env)
 	}
 
-	fmt.Println("Running command:", command.Build())
 	runner.Execute(command.Build())
 }

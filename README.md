@@ -66,8 +66,10 @@ That's pretty simple right?
 
 Now to run that service:
 - First make sure you've registered the parent directory of your repository as a store e.g if your repo is called `A`, and the parent `B` (`/B/A`), you register `B` not `A`. This allows for a single store registration
-multiple repositories that might live in the same directory. (Use the [store add command](#%F0%9F%93%A6-co2-store-add))
+for multiple repositories that might live in the same directory. (Use the [store add command](#%F0%9F%93%A6-co2-store-add))
 - Now that its registered, carbon should be able to find your service so starting it is trivial: `co2 service start my-service`
+
+> Pro Tip: If you ever want more than one service defined in your file, you separate them using the yaml document separator `---`
 
 <br/>
 

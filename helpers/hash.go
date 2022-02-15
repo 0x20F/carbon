@@ -7,7 +7,8 @@ import (
 	"strconv"
 )
 
-// Generate a unique hash for a given string.
+// Generate a unique hash for a given string with
+// the given length.
 //
 // The reason we're running FNV here is for speed. More uniqueness
 // might happen with something like md5 but that was once created for
@@ -22,5 +23,8 @@ func Hash(what string, length int) string {
 	io.WriteString(h, what)
 
 	// Format and pad with zeros if length isn't the specified one
-	return fmt.Sprintf("%0"+strconv.Itoa(length)+"x", h.Sum32())[:length]
+	formatter := "%0" + strconv.Itoa(length) + "x"
+	padded := fmt.Sprintf(formatter, h.Sum32())
+
+	return padded[:length]
 }

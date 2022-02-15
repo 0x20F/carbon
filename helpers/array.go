@@ -1,8 +1,10 @@
 package helpers
 
-func Contains(s []string, e string) bool {
-	for _, a := range s {
-		if a == e {
+// Checks whether or not the provided string
+// array contains the provided needle.
+func Contains(haystack []string, needle string) bool {
+	for _, a := range haystack {
+		if a == needle {
 			return true
 		}
 	}

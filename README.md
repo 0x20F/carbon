@@ -1,5 +1,5 @@
-<h1 align="center">Carbon</h1>
-<p align="center">beast of a wrapper</p>
+<h1>Carbon</h1>
+<p>beast of a wrapper</p>
 
 <br/>
 

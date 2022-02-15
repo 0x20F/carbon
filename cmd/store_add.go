@@ -39,13 +39,9 @@ func execAdd(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	if env == "" || helpers.IsDirectory(env) {
-		printer.Error("ERROR", "No environment file", "")
-		printer.Extra(printer.Red, "You must provide an environment file with `--env`")
-
-		if helpers.IsDirectory(env) {
-			printer.Extra(printer.Red, "The provided file isn't actually a file!")
-		}
+	if env != "" && helpers.IsDirectory(env) {
+		printer.Error("ERROR", "Environment file is wrong", "")
+		printer.Extra(printer.Red, "The provided file isn't actually a file!")
 
 		return
 	}
@@ -58,12 +54,17 @@ func execAdd(cmd *cobra.Command, args []string) {
 	}
 
 	store = helpers.ExpandPath(store)
+	environment := ""
 	printer.Info(printer.Green, "ADD", "Adding store", store)
+
+	if env != "" {
+		environment = helpers.ExpandPath(env)
+	}
 
 	store := types.Store{
 		Uid:  id,
 		Path: store,
-		Env:  env,
+		Env:  environment,
 	}
 
 	// Try deleting the stores with the same ID if they exist
@@ -77,4 +78,8 @@ func execAdd(cmd *cobra.Command, args []string) {
 		"Use `co2 show --stores` to see all id's",
 		"Verify all your services are found with `co2 show -c`",
 	)
+
+	if env == "" {
+		printer.Extra(printer.Cyan, "No environment file provided. No environment variables will be available for this store.")
+	}
 }

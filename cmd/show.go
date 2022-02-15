@@ -98,20 +98,28 @@ func showStores() {
 		return
 	}
 
-	table := printer.NewTable(3)
+	table := printer.NewTable(4)
 	printer.Info(printer.Grey, "STORE", "total registered stores:", fmt.Sprint(len(stores)))
 
 	table.Header(
 		"KEY",
 		"PATH",
 		"DATE",
+		"ENV",
 	)
 
 	for _, store := range stores {
+		env := "undefined"
+
+		if store.Env != "" {
+			env = store.Env
+		}
+
 		table.Row(
 			store.Uid,
 			store.Path,
 			fadedStyle.Render(fmt.Sprint(store.CreatedAt)),
+			env,
 		)
 	}
 

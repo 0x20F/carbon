@@ -33,7 +33,7 @@ func Stores() []types.Store {
 	for rows.Next() {
 		var out types.Store
 
-		err = rows.Scan(&out.Id, &out.Uid, &out.Path, &out.CreatedAt)
+		err = rows.Scan(&out.Id, &out.Uid, &out.Path, &out.Env, &out.CreatedAt)
 		handle(err)
 
 		stores = append(stores, out)
@@ -61,10 +61,10 @@ func AddContainer(container types.Container) types.Container {
 func AddStore(store types.Store) types.Store {
 	db, _ := Get()
 
-	stmt, err := db.Prepare("INSERT INTO stores(uid, path) VALUES(?,?);")
+	stmt, err := db.Prepare("INSERT INTO stores(uid, path, env) VALUES(?,?,?);")
 	handle(err)
 
-	res, err := stmt.Exec(store.Uid, store.Path)
+	res, err := stmt.Exec(store.Uid, store.Path, store.Env)
 	handle(err)
 
 	id, err := res.LastInsertId()

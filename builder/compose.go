@@ -16,9 +16,19 @@ func (c *DockerComposeCommandBuilder) File(file string) *DockerComposeCommandBui
 	return c
 }
 
+func (c *DockerComposeCommandBuilder) EnvFile(file string) *DockerComposeCommandBuilder {
+	c.Segments = append(c.Segments, Segment{
+		Priority: 10,
+		Key:      "--env-file",
+		Value:    file,
+	})
+
+	return c
+}
+
 func (c *DockerComposeCommandBuilder) Background() *DockerComposeCommandBuilder {
 	c.Segments = append(c.Segments, Segment{
-		Priority: 999,
+		Priority: 1000,
 		Key:      "-d",
 		Value:    "",
 	})
@@ -28,7 +38,7 @@ func (c *DockerComposeCommandBuilder) Background() *DockerComposeCommandBuilder 
 
 func (c *DockerComposeCommandBuilder) Service(service string) *DockerComposeCommandBuilder {
 	c.Segments = append(c.Segments, Segment{
-		Priority: 1000,
+		Priority: 1001,
 		Key:      service,
 		Value:    "",
 	})

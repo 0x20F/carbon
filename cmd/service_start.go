@@ -158,7 +158,7 @@ func compose(args []string) ([]string, types.ComposeFile, error) {
 	envs := []string{}
 	for _, service := range choices {
 		if !helpers.Contains(envs, service.Store.Uid) {
-			envs = append(envs, service.Store.Uid)
+			envs = append(envs, service.Store.Env)
 		}
 	}
 
@@ -224,8 +224,7 @@ func start(cmd *cobra.Command, args []string) {
 
 	// Before anything else, make sure we find
 	// all the services we require for the start.
-	// FIXME: Use the environment files
-	_, file, err := compose(args)
+	envs, file, err := compose(args)
 	if err != nil {
 		printer.Extra(printer.Grey, "Aborting")
 		return
@@ -247,8 +246,13 @@ func start(cmd *cobra.Command, args []string) {
 		File(file.Path()).
 		Service(strings.Join(args, " ")).
 		Background().
-		Up().
-		Build()
+		Up()
 
-	runner.Execute(command)
+	// Add all the environment files as well
+	for _, env := range envs {
+		command.EnvFile(env)
+	}
+
+	fmt.Println("Running command:", command.Build())
+	runner.Execute(command.Build())
 }

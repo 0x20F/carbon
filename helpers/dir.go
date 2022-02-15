@@ -43,7 +43,7 @@ func ExpandPath(path string) string {
 }
 
 func IsDirectory(path string) bool {
-	info, err := os.Stat(path)
+	info, err := os.Stat(ExpandPath(path))
 	if err != nil {
 		panic(err)
 	}

@@ -1,10 +1,21 @@
 <h1 align="center">Carbon</h1>
 <p align="center">beast of a wrapper</p>
 
+<br/>
+
+#### Fast Travel:
+- [Documentation](#documentation)
+- [Getting Help](#getting-help)
+- [Reporting Issues](#reporting-issues)
+- [Contributing](#contributing)
+
+<br/>
+
 ## What is this?
 - You create a file called `carbon.yml` in your repository root
 - That file contains the definition for how that repo will boot up as a docker container
 - You can now build dynamic docker compose files using each `carbon.yml` in the repositories.
+- Oooooor you just use this for the docker command wrappers, that works too I guess...
 
 That's the gist of it. A script with nice output that basically concatenates small, chunked, docker compose service definitions
 into a big file and runs them.
@@ -30,7 +41,27 @@ Read more about the commands at the [Documentation Section](#documentation)
 
 <br/>
 
+## Reporting Issues
+Wanna complain? That's fine. Here's how:
+- Make sure there aren't any other issues that already relate to yours
+- Make sure that it's truly an issue! If you're not sure, start a discussion and we'll go from there.
+- If none of the above, open an issue describing what you're trying to accomplish and the ways you've attempted to do that so far.
+- When you're done, kindly bring that fork back so the issue gets solved. If you want...
 
+<br/>
+
+## Contributing
+- If you've got a new feature in mind, open a discussion about it and we'll go from there
+- If you want to pick up an existing issue because it speaks to your heart for some reason, leave a comment on that issue telling the owner that you're on it and go make a fork.
+
+<br/>
+
+## Getting Help
+If you're not sure how to find something you're looking for, here are a few things you can try:
+- Look at the help menus of each of the commands in your terminal using the `-h` flag.
+- Look through the existing issues and see if anyone is already talking about the same thing.
+- Look through the existing discussions and see if anyone is already talking about the same thing.
+- Open a discussion and ask away, always start with a discussion, don't jump into an issue directly unless it's really obvious. If it truly is an issue, we'll elevate it from there.
 
 <br/>
 

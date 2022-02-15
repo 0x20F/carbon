@@ -8,14 +8,6 @@ import (
 	"github.com/pborman/ansi"
 )
 
-type Alignment int
-
-const (
-	Left   Alignment = iota
-	Center Alignment = iota
-	Right  Alignment = iota
-)
-
 // Table structure to allow for easy printing and formatting
 // of data in a table.
 //
@@ -57,6 +49,8 @@ func (t *Table) Header(data ...string) {
 }
 
 // Creates a new table row with the given data.
+// The same thing as the Header except it doesn't
+// add the spacer.
 func (t *Table) Row(data ...string) {
 	t.addRow(data)
 }

@@ -46,6 +46,28 @@ Let's start then. Here are all the command wrappers (and commands related to uni
 <br/>
 
 ### 📦 `carbon.yml`
+The `carbon.yml` file is the heart and soul of all carbon specific functionality within the program.
+This is just a simple declaration of the docker-compose kind, without any of the docker compose bits added.
+
+> Note: Any valid docker compose field is valid in this file
+
+Looks kind of like this:
+```yaml
+my-service:
+    image: golang
+    ports:
+        - "80:80"
+    volumes:
+        - /some/path:/another/path
+    command: tail -f /dev/null
+```
+
+That's pretty simple right?
+
+Now to run that service:
+- First make sure you've registered the parent directory of your repository as a store e.g if your repo is called `A`, and the parent `B` (`/B/A`), you register `B` not `A`. This allows for a single store registration
+multiple repositories that might live in the same directory. (Use the [store add command](#%F0%9F%93%A6-co2-store-add))
+- Now that its registered, carbon should be able to find your service so starting it is trivial: `co2 service start my-service`
 
 <br/>
 

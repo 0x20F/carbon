@@ -7,6 +7,11 @@ import (
 	exec "github.com/go-cmd/cmd"
 )
 
+// Executes a given command in the prefered shell
+// of your platform.
+//
+// This will stream all the output to the console and end itself
+// when the output channels have been closed.
 func Execute(command string) {
 	// Split into params
 	params := strings.Split(command, " ")

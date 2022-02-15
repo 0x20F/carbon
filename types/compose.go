@@ -9,6 +9,17 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// Compose file definition
+// This allows us to easily map an existing compose
+// file into a data structure, or vice versa and save
+// a structure into a compose file.
+//
+// All the important fields are defined and abstracted
+// away into their own types.
+//
+// Fields such as the Name and GeneratedName are not
+// in the docker compose spec so they will be ignored
+// when marshalling the file.
 type ComposeFile struct {
 	Name          string            `yaml:"-"`        // The name of the compose file without the unique id
 	Version       string            `yaml:"version"`  // The version of the compose file
@@ -30,6 +41,7 @@ func NewComposeFile() ComposeFile {
 //
 // If the same services get booted up multiple times, we want the
 // compose files to be reused not recreated with a whole new name.
+//
 // This makes us have to worry a lot less about cleaning up the
 // orphaned compose files since there won't be that many.
 func (c *ComposeFile) GenerateName() string {

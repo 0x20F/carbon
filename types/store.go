@@ -2,6 +2,8 @@ package types
 
 import "time"
 
+// Store model for our own database
+// specification of a store.
 type Store struct {
 	Id        int64     // Database key
 	Uid       string    // Unique identifier for the store

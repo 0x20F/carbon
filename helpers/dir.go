@@ -41,3 +41,12 @@ func ExpandPath(path string) string {
 
 	return abs
 }
+
+func IsDirectory(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil {
+		panic(err)
+	}
+
+	return info.IsDir()
+}

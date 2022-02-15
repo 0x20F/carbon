@@ -35,6 +35,7 @@ func Get() (*sql.DB, func() error) {
 			id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 			uid VARCHAR(64),
 			path VARCHAR(64),
+			env VARCHAR(64),
 			created_at DATETIME default CURRENT_TIMESTAMP
 		);
 		`

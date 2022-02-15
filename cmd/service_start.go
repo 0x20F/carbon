@@ -75,6 +75,8 @@ func services() types.CarbonConfig {
 
 		// For each carbon file
 		for k, v := range files {
+			// Inject the Store into each config
+			v.Store = &store
 			configs[k] = v
 		}
 	}
@@ -120,6 +122,7 @@ func extract(args []string) types.CarbonConfig {
 		container := service + "-" + helpers.RandomAlphaString(10)
 		found.FullContents["container_name"] = container
 		found.Container = container
+
 		choices[service] = found
 	}
 
@@ -130,10 +133,10 @@ func extract(args []string) types.CarbonConfig {
 // services, if they exist. This will make sure to inject all of
 // the required values into all the containers within the compose
 // file.
-func compose(args []string) (types.ComposeFile, error) {
+func compose(args []string) ([]string, types.ComposeFile, error) {
 	choices := extract(args)
 	if len(choices) == 0 {
-		return types.ComposeFile{}, errors.New("no services found")
+		return nil, types.ComposeFile{}, errors.New("no services found")
 	}
 
 	printer.Extra(printer.Green, "Generating compose file")
@@ -150,9 +153,17 @@ func compose(args []string) (types.ComposeFile, error) {
 	// Save all containers to the database
 	channel := make(chan bool)
 	go containerize(channel, compose)
-	<-channel
 
-	return compose, nil
+	// Find all the env files that should be given to the compose file
+	envs := []string{}
+	for _, service := range choices {
+		if !helpers.Contains(envs, service.Store.Uid) {
+			envs = append(envs, service.Store.Uid)
+		}
+	}
+
+	<-channel
+	return envs, compose, nil
 }
 
 // Creates container types for each of the provided services
@@ -213,7 +224,8 @@ func start(cmd *cobra.Command, args []string) {
 
 	// Before anything else, make sure we find
 	// all the services we require for the start.
-	file, err := compose(args)
+	// FIXME: Use the environment files
+	_, file, err := compose(args)
 	if err != nil {
 		printer.Extra(printer.Grey, "Aborting")
 		return

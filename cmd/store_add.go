@@ -12,6 +12,7 @@ import (
 var (
 	store string
 	id    string
+	env   string
 
 	addCmd = &cobra.Command{
 		Use:   "add",
@@ -23,12 +24,29 @@ var (
 func init() {
 	addCmd.Flags().StringVarP(&store, "store", "s", "", "The path to the store")
 	addCmd.Flags().StringVarP(&id, "id", "i", "", "The id of the store. If left empty, it will be generated")
+	addCmd.Flags().StringVarP(&env, "env", "e", "", "The environment file to use for this store. Should a path to the .env file.")
 }
 
 func execAdd(cmd *cobra.Command, args []string) {
-	if store == "" {
+	if store == "" || !helpers.IsDirectory(store) {
 		printer.Error("ERROR", "No store directory", "")
 		printer.Extra(printer.Red, "You must provide a store directory with `--store`")
+
+		if !helpers.IsDirectory(store) {
+			printer.Extra(printer.Red, "The provided directory isn't actually a directory!")
+		}
+
+		return
+	}
+
+	if env == "" || helpers.IsDirectory(env) {
+		printer.Error("ERROR", "No environment file", "")
+		printer.Extra(printer.Red, "You must provide an environment file with `--env`")
+
+		if helpers.IsDirectory(env) {
+			printer.Extra(printer.Red, "The provided file isn't actually a file!")
+		}
+
 		return
 	}
 
@@ -45,6 +63,7 @@ func execAdd(cmd *cobra.Command, args []string) {
 	store := types.Store{
 		Uid:  id,
 		Path: store,
+		Env:  env,
 	}
 
 	// Try deleting the stores with the same ID if they exist

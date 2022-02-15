@@ -1,4 +1,4 @@
-<h1>Carbon</h1>
+<h1><img alt="banner" src="./.github/images/carbon.png" width="300"/></h1>
 <p>beast of a wrapper</p>
 
 <br/>

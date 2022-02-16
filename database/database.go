@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"log"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 var instance *sql.DB
@@ -21,7 +21,7 @@ func Get() (*sql.DB, func() error) {
 	}
 
 	// Try opening the database file
-	db, err := sql.Open("sqlite3", helpers.DatabaseFile())
+	db, err := sql.Open("sqlite", helpers.DatabaseFile())
 	if err != nil {
 		log.Fatal(err)
 	}

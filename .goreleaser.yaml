@@ -33,3 +33,14 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
+
+brews:
+  - homepage: 'https://github.com/0x20F/homebrew-carbon'
+    description: 'Build tool for custom configuration of multiple smaller services, and wrapper commands for docker containers to make your life easier.'
+    folder: Formula
+    commit_author:
+      name: '0x20F'
+      email: '0x20fa@gmail.com'
+    tap:
+      owner: '0x20F'
+      name: 'homebrew-carbon'

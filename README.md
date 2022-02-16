@@ -4,6 +4,7 @@
 <br/>
 
 #### Fast Travel:
+- [Installation](#how-to-install)
 - [Documentation](#documentation)
 - [Getting Help](#getting-help)
 - [Reporting Issues](#reporting-issues)
@@ -38,6 +39,17 @@ Apart from that, this provides:
 
 Read more about the commands at the [Documentation Section](#documentation)
 
+<br/>
+
+## How to Install
+Simplest way to install it at the moment is using homebrew:
+```bash
+$ brew tap 0x20F/carbon
+$ brew install carbon
+```
+The binary are still compiled for a bunch of platforms and provided neatly in each of the [releases](https://github.com/0x20F/carbon/releases). So if homebrew isn't your cup of tea(??) you can always download other binaries directly from there until other options become available.
+
+There are plans to allow installing through different linux package managers, and maybe even windows, just haven't gotten around to it yet.
 
 <br/>
 

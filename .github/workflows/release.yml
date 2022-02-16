@@ -10,7 +10,7 @@ jobs:
   goreleaser:
     runs-on: ubuntu-latest
     steps:
-      - Name: Checkout
+      - name: Checkout
         uses: actions/checkout@v2
         with:
           fetch-depth: 0

@@ -1,137 +1,185 @@
+<h1><img alt="banner" src="./.github/images/carbon.png" width="300"/></h1>
+<p>beast of a wrapper</p>
 
-<p align="center">
-	<img alt="banner" src="./.github/images/carbon.png" width="300"/>
-</p>
+<br/>
 
-<p align="center">docker abstraction layer with added flair</p>
+#### Fast Travel:
+- [Documentation](#documentation)
+- [Getting Help](#getting-help)
+- [Reporting Issues](#reporting-issues)
+- [Contributing](#contributing)
+
+<br/>
+
+## What is this?
+- You create a file called `carbon.yml` in your repository root
+- That file contains the definition for how that repo will boot up as a docker container
+- You can now build dynamic docker compose files using each `carbon.yml` in the repositories.
+- Oooooor you just use this for the docker command wrappers, that works too I guess...
+
+That's the gist of it. A script with nice output that basically concatenates small, chunked, docker compose service definitions
+into a big file and runs them.
+
+<br/>
+
+## Why would you use this?
+**I don't know, honestly.** Maybe you have multiple small docker services that are all defined in the same compose file but you'd like them to be separated into their own 
+configuration files within each project. Maybe you're just here for the helpers, that's a valid reason too. 
+
+I just built this because I needed it and it's now
+public because I thought other people might want to use it too.
+
+Apart from that, this provides:
+- Unique container names for all started services.
+- Easy wrapper commands for common things you might want to do, such as, getting a shell into a container is as simple as `co2 shell <container-name> | iex` (powershell).
+- Easy executing of commands within one or multiple containers `co2 exec <container-A> <container-B> <container-C> -c echo "Hello World"`.
+- Give each running docker container a unique ID which you can use to interact with it, preventing you from writing tedious 20+ character names by hand, or worse, copy pasting... (`co2 show -r` for a fresh table of all running containers).
+- Neatly colored output.
+
+Read more about the commands at the [Documentation Section](#documentation)
 
 
 <br/>
 
-_Fast travel_:
-- [Tips](#Tips)
-- [Contributing](#Contributing)
-- [How it works](#How-it-works)
-- [Installation](#Installing)
-- [Help](#Getting-help)
+## Reporting Issues
+Wanna complain? That's fine. Here's how:
+- Make sure there aren't any other issues that already relate to yours
+- Make sure that it's truly an issue! If you're not sure, start a discussion and we'll go from there.
+- If none of the above, open an issue describing what you're trying to accomplish and the ways you've attempted to do that so far.
+- When you're done, kindly bring that fork back so the issue gets solved. If you want...
 
 <br/>
 
-This tool started its life as a way to make developing multiple smaller projects/apis 
-that need to interact with each other a lot easier by allowing each project to define how
-it should be spun up as a container. Dare I say it's now possible to use it to _somewhat_
-orchestrate how smaller networks of services work. For when you don't need the scalability of
-Kubernetes I guess.
+## Contributing
+- If you've got a new feature in mind, open a discussion about it and we'll go from there
+- If you want to pick up an existing issue because it speaks to your heart for some reason, leave a comment on that issue telling the owner that you're on it and go make a fork.
 
 <br/>
 
-### What it is
-The gist of it all is that instead if having a big `docker-compose.yml` full of services,
-you have multiple smaller files spread out throughout your projects. 
-
-Big compose files become unwieldy pretty quick while dependencies between services increase.
-Carbon aims to somewhat alleviate that by giving each service responsibility over itself
-instead of a centralized file.
-
-<br/>
-
-### How it works
-1. Carbon needs a `.env` file to function properly. That's where you define where
-all your mini-projects are located. If working in an organization, all projects within that organization are (hopefully) in the same directory. That's the directory you tell Carbon to look into by setting the `PROJECTS_DIRECTORY` environment variable.
-If using a `.env` file, all of those variables will also be provided to the 
-`carbon.yml` files  (read below to find out about those). You can add a `.env` file to Carbon using the `carbon env add <file_path> <alias>` command.
-
-2. Each service has the _right_ to define a `carbon.yml` file within its directory. This file
-is allowed to contain exactly what would have been written in the `service:` block for a normal
-`docker-compose.yml` file. This carbon file tells Carbon how to spin up said service.
-
-3. Each service is also allowed to define a `carbon-isotope.yml` file within its directory. This file
-can be used to house a second type of configuration for the service. I, personally, have been using this
-to setup the exact same service, but with all of its ports exposed so that it can be used for development.
-
-4. Once you've got your `.env` file ready, and one of your projects contains a `carbon.yml` file, you can start that service with `carbon service start <service_name>`. Keep in mind that Carbon will look at a directory named like the name you pass in. That's a current limitation: container names + directory names need to match up.
-
-That's all the extra functionality that Carbon itself adds on top of docker compose. It does add some wrapper functionality to make using the docker cli a bit easier. Check the **Overrides** for that.
+## Getting Help
+If you're not sure how to find something you're looking for, here are a few things you can try:
+- Look at the help menus of each of the commands in your terminal using the `-h` flag.
+- Look through the existing issues and see if anyone is already talking about the same thing.
+- Look through the existing discussions and see if anyone is already talking about the same thing.
+- Open a discussion and ask away, always start with a discussion, don't jump into an issue directly unless it's really obvious. If it truly is an issue, we'll elevate it from there.
 
 <br/>
 
-### Overrides
-Docker things that carbon does as well, sometimes better.
-- Commands return colored output/tables for a clearer understanding of what you're looking at.
-- Carbon has a command for quickly starting a new service and immediately adding it to an existing docker network.
-- Display information about networks
-- Display information about containers
-- Rebuild already running services on the fly. Useful when the image has been updated and it needs a hard reset. This does kill the service beforehand (for now at least).
-- Easy management of environment variables
-- Start services
-- Stop services
-- Create networks
-- Remove networks
-- Connect to networks
-- ...and more
+## Documentation
+> **Note**: This program does have helpful wrapper commands for common docker things, however, it's not just that. Therefore it also contains more features that you may or may not choose to use.
 
+> **Double Note**: Keep in mind that all these options also exist in the program help menu which can be accessed by passing the `-h` param to any command or subcommand.
+
+> **Triple Note**:  If you see the 📦 next to something, it's carbon specific and you probably shouldn't care if docker is all you want.
+
+Let's start then. Here are all the command wrappers (and commands related to unique carbon functionality) so far and what they do:
 
 <br/>
 
-### Installing
-1. Installation is done through `cargo` for now since it does the job for my needs.
-```bash
-cargo install carbon-cli
+### 📦 `carbon.yml`
+The `carbon.yml` file is the heart and soul of all carbon specific functionality within the program.
+This is just a simple declaration of the docker-compose kind, without any of the docker compose bits added.
+
+> Note: Any valid docker compose field is valid in this file
+
+Looks kind of like this:
+```yaml
+my-service:
+    image: golang
+    ports:
+        - "80:80"
+    volumes:
+        - /some/path:/another/path
+    command: tail -f /dev/null
 ```
-2. Also add an alias for your shell since it'll be called `carbon-cli` otherwise. Just `carbon` was taken, nothing I can do about that.
 
-Just make sure you have a `.local` directory in your **home** folder. That's where Carbon will keep track of all the settings you choose while using it (in a file called `carbon-footprint.yml`)
+That's pretty simple right?
 
-<br/>
+Now to run that service:
+- First make sure you've registered the parent directory of your repository as a store e.g if your repo is called `A`, and the parent `B` (`/B/A`), you register `B` not `A`. This allows for a single store registration
+for multiple repositories that might live in the same directory. (Use the [store add command](#%F0%9F%93%A6-co2-store-add))
+- Now that its registered, carbon should be able to find your service so starting it is trivial: `co2 service start my-service`
 
-### Tips
-Here're some bits of information that might come in handy:
-- Multiple `.env` files can be used, since each file is given an alias when added it can also be set as _active_ later on. List all your `.env` files with `carbon env ls`. Carbon will always use the _active_ `.env` file.
-- Each subcommand of Carbon has an alias as well (usually the first letter of the original command). `list` for example has `ls`.
-- Service `start`, `stop`, `add`, and `rebuild` commands can all work on multiple services. You don't have to run the command multiple times, just once with everything. You can sort out the networks after the fact.
+> Pro Tip: If you ever want more than one service defined in your file, you separate them using the yaml document separator `---`
 
-
-<br/>
-
-### Getting help
-If something doesn't feel right when you really think it should, follow the checklist:
-1. Did you look at the proper usage of a command by adding the `-h` flag? Example: `carbon service -h`.
-2. Have you read the (very basic (sorry)) explanation of how everything is supposed to work? (defined above)
-3. Rummage through the discussions and see if there is anything that might be related to your issue.
-
-**Emergency**: If none of the above things help. **Please** start a discussion and tag a contributor. Don't jump directly to creating an issue since it might not really be an issue. Just poor documentation on our end, or just _not_ an actual feature.
+#### Stores
+In carbon, there's a concept called a _store_. This is, in simple terms, a directory in which carbon can look for `carbon.yml` files. Each store can have its own 
+`.env` file linked to it and it will pass it to all the services that are found within that store. The _store_ commands described below
+make it pretty clear how to make use of a store.
 
 <br/>
 
-### Contributing
-If you think a _feature_ is broken, or should be implemented, or that there's a bug (unintended feature), talking about it is absolutely the best way of making sure that what you want actually happens. Unless you want to take things into your own hand and implement it yourself which is also more than fine. 
+### `co2 show`
+This one handles multiple things depending on the set flag:
+- `-r` Will show **all** the running docker containers.
+- 📦 `-a` Will show all the `carbon.yml` service files that are available for use.
+- 📦 `-s` Shows all the _stores_ that carbon has access to
 
-Here's what you do:
-1. Start a discussion about it. Make sure to drag in all parties that seem relevant.
-2. Speak what's on your mind.
-
-This is an actively maintained tool since I do use it constantly in my own projects, however unless I need a feature, I won't know that there's something missing so the best way to make something happen is to bring it up.
-
-Keep in mind that commits relating to a fix should start with `fix:` and commits
-related to features should start with `feat:`. This allows [git-cliff](#) to build a nice summary of what's happened every release.
-
+> Pro Tip: These can all be used together
 
 <br/>
 
-### Images
-If you're more of a visual person, here's _some_ usage in the form of images:
+### `co2 shell`
+This one will build a docker command that gets you a shell into whatever container or service you specified.
+Do keep in mind, however, that since this **only returns** the composed command you still have to run it somehow.
+Example:
+```bash
+$ co2 shell my-container
+$ docker exec -it my-container /bin/bash
+```
+> Pro Tip: You can use the unique IDs that the [show](#co2-show) command displays to quickly specify a container
 
-- Help menu
-<img alt="banner" src="./.github/images/b.png"/>
+#### Valid Modifiers
+- `-sh` To get `/bin/sh` instead of `bash`
+- `-c` To execute a custom shell (or command if you really wanna) as in `co2 shell -c /bin/but-something-else my-container`
 
-- Listing all available containers/services
-<img alt="banner" src="./.github/images/a.png"/>
+<br/>
 
-- Listing all available networks
-<img alt="banner" src="./.github/images/c.png"/>
+### 📦 `co2 store add`
+This will _add_ a new directory(store) for carbon to look in when searching for `carbon.yml` files. It comes packed with 2 whole parameters:
+- `-s` The path for the store, could be absolute (`/home/whatever/you`) or relative (`../../../sure`)
+- `-i` A unique ID for the store you're adding. If not provided, one will be generated automatically so don't worry.
+- `-e` A path to an environment file (of the `.env` variety). This will be passed along to all the service configurations in the given store when they start.
+```bash
+# Example Usage
+$ co2 store add -s ../ -i unique-store
+```
+> Pro Tip: You can list all the stores with the [show command](#co2-show)
 
-- Starting a service called `hemingway`
-<img alt="banner" src="./.github/images/d.png"/>
+<br/>
 
-- Stopping a service called hemingway
-<img alt="banner" src="./.github/images/e.png"/>
+### 📦 `co2 store remove`
+The opposite of [add](#%F0%9F%93%A6-co2-store-add) as you'd expect. All it takes is that unique ID that you maybe defined, but definitely got with the `add` command.
+```bash
+$ co2 store remove unique-store
+```
+> Pro Tip: The remove command can take any number of store IDs
+
+<br/>
+
+### 📦 `co2 service start`
+Looks through all the registered stores (see [add](#%F0%9F%93%A6-co2-store-add) on how to register stores) and starts all of the provided services
+if they're found. 
+
+As an added bonus, if the service defines any other services it is dependent on, usually within the `depends_on` field in the configuration, it will make sure that
+those services are included in the provided list otherwise it'll abort and inform you that you're missing some important things.
+
+Example:
+```bash
+$ co2 service start A B C
+```
+> Note: The names you provide here are what you defined within your carbon.yml file
+
+If some of the provided services are already running but you'd like to stop them all and force a refresh, there's a flag for that:
+- `-f` forces a service start, meaning all provided services will be stopped before attempting to start them again.
+
+<br/>
+
+### 📦 `co2 service stop`
+Looks through the currently running **carbon** services and stops the provided ones.
+
+Example:
+```bash
+$ co2 service stop A B C
+```
+> Note: The names you provide here are what you defined within your carbon.yml file

@@ -50,7 +50,7 @@ func execLogs(cmd *cobra.Command, args []string) {
 	}
 
 	// For each match we found, build the docker command
-	var commands = []string{}
+	var commands = []types.Command{}
 
 	for _, structure := range matches {
 		command := builder.DockerLogsCommand().
@@ -60,7 +60,10 @@ func execLogs(cmd *cobra.Command, args []string) {
 			command.Follow()
 		}
 
-		commands = append(commands, command.Build())
+		commands = append(commands, types.Command{
+			Text: command.Build(),
+			Name: structure.Container.Names[0],
+		})
 	}
 
 	// Execute all the commands

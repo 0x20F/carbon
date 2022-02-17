@@ -10,3 +10,8 @@ type SortableMapItem struct {
 }
 
 type SortableMap []SortableMapItem
+
+type Command struct {
+	Text string
+	Name string
+}

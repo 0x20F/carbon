@@ -65,6 +65,8 @@ func execStop(cmd *cobra.Command, args []string) {
 		// Run the command even if the database hasn't fully
 		// updated yet. It's independent.
 		printer.Extra(printer.Green, "Executing stop command for compose file: "+path)
-		<-runner.Execute(command.Build())
+		<-runner.Execute(types.Command{
+			Text: command.Build(),
+		})
 	}
 }

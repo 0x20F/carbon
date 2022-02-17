@@ -257,5 +257,7 @@ func start(cmd *cobra.Command, args []string) {
 		command.EnvFile(env)
 	}
 
-	<-runner.Execute(command.Build())
+	<-runner.Execute(types.Command{
+		Text: command.Build(),
+	})
 }

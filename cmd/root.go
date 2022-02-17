@@ -24,4 +24,5 @@ func init() {
 	rootCmd.AddCommand(showCmd)
 	rootCmd.AddCommand(storeCmd)
 	rootCmd.AddCommand(shellCmd)
+	rootCmd.AddCommand(logsCmd)
 }

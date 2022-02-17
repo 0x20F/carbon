@@ -44,3 +44,21 @@ brews:
     tap:
       owner: '0x20F'
       name: 'homebrew-carbon'
+
+nfpms:
+  - id: 'co2'
+    package_name: 'carbon'
+    replacements:
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+      386: i386
+      amd64: x86_64
+    homepage: https://github.com/0x20F/carbon
+    maintainer: 0x20F <0x20fa@gmail.com>
+    description: Build tool for custom configuration of multiple smaller services, and wrapper commands for docker containers to make your life easier.
+    license: MPL-2.0
+    formats:
+      - apk
+      - deb
+      - rpm

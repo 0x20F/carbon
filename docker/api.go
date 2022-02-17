@@ -2,8 +2,7 @@ package docker
 
 import (
 	"co2/helpers"
-
-	dockerTypes "github.com/docker/docker/api/types"
+	"co2/types"
 )
 
 // Gets all the containers that are currently running on the machine.
@@ -17,15 +16,18 @@ import (
 // but it's also static. Meaning that as long as the container has the same name
 // as its always had and the same image, the resulting unique ID will always
 // be the same.
-func RunningContainers() map[string]dockerTypes.Container {
+func RunningContainers() types.SortableMap {
 	cli := wrapper().docker
 	containers := cli.RunningContainers()
 
-	var parsed = map[string]dockerTypes.Container{}
+	var parsed = make(types.SortableMap, len(containers))
 
 	for _, container := range containers {
 		key := helpers.Hash(container.Image+container.Names[0], 4)
-		parsed[key] = container
+		parsed = append(parsed, types.SortableMapItem{
+			Uid:       key,
+			Container: &container,
+		})
 	}
 
 	return parsed

@@ -11,7 +11,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"sync"
 
 	"github.com/spf13/cobra"
 )
@@ -162,8 +161,7 @@ func compose(args []string) ([]string, types.ComposeFile, error) {
 	compose.Save()
 
 	// Save all containers to the database
-	channel := make(chan bool)
-	go containerize(channel, compose)
+	containerize(compose)
 
 	// Find all the env files that should be given to the compose file
 	for _, service := range choices {
@@ -176,7 +174,6 @@ func compose(args []string) ([]string, types.ComposeFile, error) {
 		}
 	}
 
-	<-channel // Wait for all jobs to finish
 	return envs, compose, nil
 }
 
@@ -186,7 +183,7 @@ func compose(args []string) ([]string, types.ComposeFile, error) {
 //
 // Also saves all the containers to the database so that all required
 // information can be retrieved later if ever needed.
-func containerize(channel chan bool, compose types.ComposeFile) {
+func containerize(compose types.ComposeFile) {
 	containers := []types.Container{}
 
 	for name, service := range compose.Services {
@@ -199,21 +196,11 @@ func containerize(channel chan bool, compose types.ComposeFile) {
 		containers = append(containers, container)
 	}
 
-	var wg sync.WaitGroup
-
 	// Try saving it all async so it goes faster,
 	// we can do other things in the meantime if we ever need to.
 	for _, container := range containers {
-		wg.Add(1)
-
-		go func(container types.Container) {
-			defer wg.Done()
-			database.AddContainer(container)
-		}(container)
+		database.AddContainer(container)
 	}
-
-	wg.Wait()
-	channel <- true
 }
 
 // Starts the service start command.

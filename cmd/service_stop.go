@@ -8,7 +8,6 @@ import (
 	"co2/runner"
 	"co2/types"
 	"strings"
-	"sync"
 
 	"github.com/spf13/cobra"
 )
@@ -50,8 +49,6 @@ func execStop(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	var wg sync.WaitGroup
-
 	// Stop all the containers in each group and
 	// delete them from the database
 	for path, composeFile := range grouped {
@@ -62,11 +59,7 @@ func execStop(cmd *cobra.Command, args []string) {
 		for _, container := range composeFile {
 			command.Service(container.Name)
 
-			wg.Add(1)
-			go func(container types.Container) {
-				defer wg.Done()
-				database.DeleteContainer(container)
-			}(container)
+			database.DeleteContainer(container)
 		}
 
 		// Run the command even if the database hasn't fully
@@ -74,6 +67,4 @@ func execStop(cmd *cobra.Command, args []string) {
 		printer.Extra(printer.Green, "Executing stop command for compose file: "+path)
 		runner.Execute(command.Build())
 	}
-
-	wg.Wait()
 }

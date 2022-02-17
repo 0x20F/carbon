@@ -226,14 +226,6 @@ func start(cmd *cobra.Command, args []string) {
 		strings.Join(args, ", "),
 	)
 
-	// Before anything else, make sure we find
-	// all the services we require for the start.
-	envs, file, err := compose(args)
-	if err != nil {
-		printer.Extra(printer.Grey, "Aborting")
-		return
-	}
-
 	// If we're forcing, we want to cleanup first
 	if force {
 		printer.Extra(
@@ -242,6 +234,13 @@ func start(cmd *cobra.Command, args []string) {
 		)
 
 		execStop(cmd, args)
+	}
+
+	// Find fresh service configurations
+	envs, file, err := compose(args)
+	if err != nil {
+		printer.Extra(printer.Grey, "Aborting")
+		return
 	}
 
 	// Execute the compose command

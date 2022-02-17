@@ -58,7 +58,6 @@ func execStop(cmd *cobra.Command, args []string) {
 
 		for _, container := range composeFile {
 			command.Service(container.Name)
-
 			database.DeleteContainer(container)
 		}
 

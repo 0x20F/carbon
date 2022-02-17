@@ -1,9 +1,11 @@
 package runner
 
 import (
+	"co2/helpers"
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/lipgloss"
 	exec "github.com/go-cmd/cmd"
 )
 
@@ -12,7 +14,7 @@ import (
 //
 // This will stream all the output to the console and end itself
 // when the output channels have been closed.
-func Execute(command string) {
+func singleRun(doneChan chan struct{}, command string, style lipgloss.Style) {
 	// Split into params
 	params := strings.Split(command, " ")
 
@@ -24,9 +26,10 @@ func Execute(command string) {
 
 	// Stream output from the command and close when
 	// both channels close.
-	doneChan := make(chan struct{})
 	go func(doneChan chan struct{}) {
 		defer close(doneChan)
+
+		header := fmt.Sprintf("[ %s ]", style.Render(command[:14]))
 
 		for run.Stdout != nil || run.Stderr != nil {
 			select {
@@ -36,14 +39,14 @@ func Execute(command string) {
 					continue
 				}
 
-				fmt.Println(string(out))
+				fmt.Println(header, string(out))
 			case err, ok := <-run.Stderr:
 				if !ok {
 					run.Stderr = nil
 					continue
 				}
 
-				fmt.Println(string(err))
+				fmt.Println(header, string(err))
 			}
 		}
 	}(doneChan)
@@ -51,4 +54,22 @@ func Execute(command string) {
 	<-run.Start()
 	// Block waiting for command to exit, be stopped, or be killed
 	<-doneChan
+}
+
+func Execute(commands ...string) chan struct{} {
+	done := make(chan struct{})
+
+	for _, command := range commands {
+		hash := helpers.Hash(command, 14)
+		color := helpers.StringToColor(hash)
+
+		// Create a custom color based on the command to distinguish
+		// the outputs
+		style := lipgloss.NewStyle().
+			Foreground(lipgloss.Color(color))
+
+		go singleRun(done, command, style)
+	}
+
+	return done
 }

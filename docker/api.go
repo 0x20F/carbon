@@ -20,13 +20,13 @@ func RunningContainers() types.SortableMap {
 	cli := wrapper().docker
 	containers := cli.RunningContainers()
 
-	var parsed = make(types.SortableMap, len(containers))
+	var parsed = types.SortableMap{}
 
 	for _, container := range containers {
 		key := helpers.Hash(container.Image+container.Names[0], 4)
 		parsed = append(parsed, types.SortableMapItem{
 			Uid:       key,
-			Container: &container,
+			Container: container,
 		})
 	}
 

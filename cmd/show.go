@@ -69,6 +69,10 @@ func showRunning() {
 		return
 	}
 
+	sort.Slice(containers, func(i, j int) bool {
+		return containers[i].Container.Names[0] < containers[j].Container.Names[0]
+	})
+
 	table := printer.NewTable(7)
 	printer.Info(printer.Cyan, "RUN", "total running containers:", fmt.Sprint(len(containers)))
 
@@ -82,7 +86,9 @@ func showRunning() {
 		"STATUS",
 	)
 
-	for key, container := range containers {
+	for _, structure := range containers {
+		key := structure.Uid
+		container := structure.Container
 		ports := []string{}
 
 		for _, port := range container.Ports {
@@ -120,6 +126,11 @@ func showStores() {
 		printer.Info(printer.Grey, "STORE", "No registered stores", "")
 		return
 	}
+
+	// Sort the stores by path
+	sort.Slice(stores, func(i, j int) bool {
+		return stores[i].Path < stores[j].Path
+	})
 
 	table := printer.NewTable(4)
 	printer.Info(printer.Grey, "STORE", "total registered stores:", fmt.Sprint(len(stores)))

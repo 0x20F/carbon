@@ -39,7 +39,7 @@ func execStop(cmd *cobra.Command, args []string) {
 
 	// Group the containers by their compose file
 	for _, container := range containers {
-		if helpers.Contains(args, container.ServiceName) {
+		if helpers.Contains(args, container.ServiceName) || helpers.Contains(args, container.Uid) {
 			grouped[container.ComposeFile] = append(grouped[container.ComposeFile], container)
 		}
 	}

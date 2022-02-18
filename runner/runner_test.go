@@ -25,8 +25,14 @@ func before() {
 func TestLabelGeneratesCorrectly(t *testing.T) {
 	generated := label("test")
 
-	if generated != "[ test ]:" {
-		t.Errorf("Expected [ test ], got %s", generated)
+	if generated != "[ %s ]: " {
+		t.Errorf("Expected [ %%s ]: , got %s", generated)
+	}
+
+	empty := label("")
+
+	if empty != "%s" {
+		t.Errorf("Expected %s, got %s", "%s", empty)
 	}
 }
 

@@ -2,6 +2,7 @@ package docker
 
 import (
 	"co2/helpers"
+	"strings"
 	"testing"
 
 	"github.com/4khara/replica"
@@ -42,6 +43,20 @@ func TestRunningContainers(t *testing.T) {
 	}
 }
 
+func TestApiWrapperRemovesContainerNameSlash(t *testing.T) {
+	before()
+
+	containers := RunningContainers()
+
+	// Make sure none of the container names start with a slash
+	for _, container := range containers {
+		// Check if starts with
+		if strings.HasPrefix(container.Name, "/") {
+			t.Error("Expected container name to not start with a slash")
+		}
+	}
+}
+
 func TestContainerKeys(t *testing.T) {
 	before()
 
@@ -49,8 +64,8 @@ func TestContainerKeys(t *testing.T) {
 
 	// Make sure the keys are correct
 	expected := []string{
-		helpers.Hash("image1/container1", 4),
-		helpers.Hash("image2/container2", 4),
+		helpers.Hash("image1container1", 4),
+		helpers.Hash("image2container2", 4),
 	}
 
 	if containers[0].Uid != expected[0] {

@@ -10,9 +10,9 @@ import (
 	dockerTypes "github.com/docker/docker/api/types"
 )
 
-type MockWrapper struct{}
+type MockWrapperLogs struct{}
 
-func (w *MockWrapper) RunningContainers() []dockerTypes.Container {
+func (w *MockWrapperLogs) RunningContainers() []dockerTypes.Container {
 	replica.MockFn()
 
 	return []dockerTypes.Container{
@@ -34,8 +34,8 @@ func (w *MockWrapper) RunningContainers() []dockerTypes.Container {
 	}
 }
 
-func before() {
-	docker.CustomWrapper(&MockWrapper{})
+func beforeLogTest() {
+	docker.CustomWrapper(&MockWrapperLogs{})
 }
 
 func TestShouldRunLogsCommandReturnsFalseWithNoCommands(t *testing.T) {
@@ -93,7 +93,7 @@ func TestCommandLabelMatchesContainerName(t *testing.T) {
 }
 
 func TestContainersFilterFindsByUid(t *testing.T) {
-	before()
+	beforeLogTest()
 
 	// Get the containers that docker will return so we can get the hashes
 	dockerContainers := docker.RunningContainers()
@@ -108,7 +108,7 @@ func TestContainersFilterFindsByUid(t *testing.T) {
 }
 
 func TestContainersFilterFindsByCarbonServiceName(t *testing.T) {
-	before()
+	beforeLogTest()
 
 	containers := []types.Container{
 		{
@@ -134,7 +134,7 @@ func TestContainersFilterFindsByCarbonServiceName(t *testing.T) {
 }
 
 func TestContainersMatchesBothUidAndServiceName(t *testing.T) {
-	before()
+	beforeLogTest()
 
 	containers := []types.Container{
 		{

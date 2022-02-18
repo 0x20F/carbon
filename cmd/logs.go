@@ -91,6 +91,10 @@ func generateCommands(matches []types.Container, follow bool) []types.Command {
 // don't have any specific carbon service names. If none of those match
 // it will try to match the strings with the service names of the
 // containers stored in the database.
+//
+// If a container UID is provided, as long as that container is running, it won't
+// matter if it's carbon or not. As soon as a service name is provided, the service
+// has to be a carbon service.
 func filterContainers(choices []string) []types.Container {
 	containers := docker.RunningContainers()
 	saved := database.Containers()

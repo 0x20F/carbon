@@ -2,6 +2,12 @@ package helpers
 
 import "fmt"
 
+// Generates a new hexadecimal color code in the format
+// #RRGGBB based on the given string.
+//
+// Whatever the string is, the returned color will be unique
+// to that string meaning that if you send the same string 50 times,
+// you can expect to receive the same color 50 times.
 func StringToColor(s string) string {
 	hash := 0
 	runes := []rune(s)

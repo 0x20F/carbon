@@ -3,17 +3,18 @@ package runner
 import (
 	"fmt"
 	"strings"
+	"sync"
 
 	exec "github.com/go-cmd/cmd"
 )
 
 type ExecutorInterface interface {
-	Execute(chan struct{}, string, string)
+	Execute(*sync.WaitGroup, string, string)
 }
 
 type executorImpl struct{}
 
-func (e *executorImpl) Execute(done chan struct{}, command string, label string) {
+func (e *executorImpl) Execute(done *sync.WaitGroup, command string, label string) {
 	// Split into params
 	params := strings.Split(command, " ")
 
@@ -25,8 +26,8 @@ func (e *executorImpl) Execute(done chan struct{}, command string, label string)
 
 	// Stream output from the command and close when
 	// both channels close.
-	go func(doneChan chan struct{}) {
-		defer close(doneChan)
+	go func(doneChan *sync.WaitGroup) {
+		defer doneChan.Done()
 
 		for run.Stdout != nil || run.Stderr != nil {
 			select {
@@ -50,5 +51,4 @@ func (e *executorImpl) Execute(done chan struct{}, command string, label string)
 
 	// Block waiting for command to exit, be stopped, or be killed
 	<-run.Start()
-	<-done
 }

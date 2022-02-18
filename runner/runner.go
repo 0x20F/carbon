@@ -44,18 +44,20 @@ func CustomExecutor(e ExecutorInterface) ExecutorInterface {
 //
 // This will stream all the output to the console and end itself
 // when the output channels have been closed.
-func Execute(commands ...types.Command) chan struct{} {
+func Execute(commands ...types.Command) {
 	executor := Executor()
-	done := make(chan struct{})
+	var wg sync.WaitGroup
 
 	for _, command := range commands {
+		wg.Add(1)
+
 		colored := colorize(command)
 		label := label(colored)
 
-		go executor.Execute(done, command.Text, label)
+		go executor.Execute(&wg, command.Text, label)
 	}
 
-	return done
+	wg.Wait()
 }
 
 // Return a colored string that contains the given command name.

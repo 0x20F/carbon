@@ -45,7 +45,7 @@ func execLogs(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	<-runner.Execute(commands...)
+	runner.Execute(commands...)
 }
 
 // Various gates and checks to make sure the

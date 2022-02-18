@@ -3,6 +3,7 @@ package runner
 import (
 	"co2/helpers"
 	"co2/types"
+	"sync"
 	"testing"
 
 	"github.com/4khara/replica"
@@ -11,10 +12,10 @@ import (
 
 type MockExecutor struct{}
 
-func (e *MockExecutor) Execute(done chan struct{}, command string, label string) {
+func (e *MockExecutor) Execute(done *sync.WaitGroup, command string, label string) {
 	replica.MockFn(done, command, label)
 
-	done <- struct{}{}
+	done.Done()
 }
 
 func before() {
@@ -62,7 +63,7 @@ func TestExecuteCallsAllProvidedCommands(t *testing.T) {
 		},
 	}
 
-	<-Execute(commands...)
+	Execute(commands...)
 
 	if replica.Mocks.GetCallCount("Execute") != len(commands) {
 		t.Errorf("Expected %d calls, got %d", len(commands), replica.Mocks.GetCallCount("Execute"))

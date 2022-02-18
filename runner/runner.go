@@ -49,20 +49,37 @@ func Execute(commands ...types.Command) chan struct{} {
 	done := make(chan struct{})
 
 	for _, command := range commands {
-		hash := helpers.Hash(command.Text, 14)
-		color := helpers.StringToColor(hash)
-
-		style := lipgloss.NewStyle().
-			Foreground(lipgloss.Color(color))
-
-		label := ""
-
-		if command.Name != "" {
-			label = fmt.Sprintf("[ %s ]:", style.Render(command.Name))
-		}
+		colored := colorize(command)
+		label := label(colored)
 
 		go executor.Execute(done, command.Text, label)
 	}
 
 	return done
+}
+
+// Return a colored string that contains the given command name.
+// The string is colored based on the command Text/contents meaning if
+// the command is always the same, the color will also always
+// be the same.
+//
+// To be used in combination with the label() function.
+func colorize(command types.Command) string {
+	hash := helpers.Hash(command.Text, 14)
+	color := helpers.StringToColor(hash)
+	style := lipgloss.NewStyle().
+		Foreground(lipgloss.Color(color))
+
+	return style.Render(command.Name)
+}
+
+// Cretes a label from a given string,
+// to be shown before each line of output for a specific
+// command.
+func label(from string) string {
+	if from == "" {
+		return ""
+	}
+
+	return fmt.Sprintf("[ %s ]:", from)
 }

@@ -16,7 +16,18 @@ func Containers() []types.Container {
 	for rows.Next() {
 		var out types.Container
 
-		err = rows.Scan(&out.Id, &out.Name, &out.ServiceName, &out.ComposeFile, &out.CreatedAt)
+		err = rows.Scan(
+			&out.Id,
+			&out.DockerUid,
+			&out.Uid,
+			&out.Name,
+			&out.Image,
+			&out.ServiceName,
+			&out.ComposeFile,
+			&out.Ports,
+			&out.Status,
+			&out.CreatedAt,
+		)
 		handle(err)
 
 		containers = append(containers, out)
@@ -52,10 +63,19 @@ func Stores() []types.Store {
 func AddContainer(container types.Container) types.Container {
 	db, _ := Get()
 
-	stmt, err := db.Prepare("INSERT INTO containers(uid, name, compose_file) VALUES(?,?,?);")
+	stmt, err := db.Prepare("INSERT INTO containers(docker_uid, uid, name, image, service_name, compose_file, ports, status) VALUES(?,?,?,?,?,?,?,?);")
 	handle(err)
 
-	res, err := stmt.Exec(container.Name, container.ServiceName, container.ComposeFile)
+	res, err := stmt.Exec(
+		container.DockerUid,
+		container.Uid,
+		container.Name,
+		container.Image,
+		container.ServiceName,
+		container.ComposeFile,
+		container.Ports,
+		container.Status,
+	)
 	handle(err)
 
 	id, err := res.LastInsertId()
@@ -92,7 +112,7 @@ func DeleteContainer(container types.Container) int64 {
 	stmt, err := db.Prepare("DELETE FROM containers WHERE uid=? AND name=?;")
 	handle(err)
 
-	res, err := stmt.Exec(container.Name, container.ServiceName)
+	res, err := stmt.Exec(container.Uid, container.Name)
 	handle(err)
 
 	affect, err := res.RowsAffected()

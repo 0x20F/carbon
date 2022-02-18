@@ -6,7 +6,6 @@ import (
 	"co2/printer"
 	"fmt"
 	"sort"
-	"strings"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
@@ -92,7 +91,7 @@ func showRunning() {
 			container.Name,
 			container.DockerUid[:10],
 			container.Image,
-			fadedStyle.Render(strings.Join(container.Ports, ", ")),
+			fadedStyle.Render(container.Ports),
 			fadedStyle.Render(fmt.Sprint(container.CreatedAt)),
 			fadedStyle.Render(container.Status),
 		)

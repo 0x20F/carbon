@@ -54,9 +54,9 @@ func TestContainerDelete(t *testing.T) {
 	defer close()
 
 	// Insert a new container
-	AddContainer(types.Container{ServiceName: "test1"})
-	AddContainer(types.Container{ServiceName: "test2"})
-	AddContainer(types.Container{ServiceName: "test3"})
+	AddContainer(types.Container{Uid: "juan", Name: "test1"})
+	AddContainer(types.Container{Uid: "ayeo", Name: "test2"})
+	AddContainer(types.Container{Uid: "Nioo", Name: "test3"})
 
 	// Get all the containers
 	containers := Containers()

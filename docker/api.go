@@ -3,6 +3,7 @@ package docker
 import (
 	"co2/types"
 	"fmt"
+	"strings"
 )
 
 // Gets all the containers that are currently running on the machine.
@@ -32,7 +33,7 @@ func RunningContainers() []types.Container {
 		c := types.Container{
 			Name:      container.Names[0],
 			Image:     container.Image,
-			Ports:     ports,
+			Ports:     strings.Join(ports, ", "),
 			Status:    container.Status,
 			DockerUid: container.ID,
 		}

@@ -57,10 +57,15 @@ func handle(e error) {
 func schema() string {
 	return `
 	CREATE TABLE IF NOT EXISTS containers (
-		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, 
+		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+		docker_uid VARCHAR(64),
 		uid VARCHAR(64), 
-		name VARCHAR(64), 
+		name VARCHAR(64),
+		image VARCHAR(64),
+		service_name VARCHAR(64),
 		compose_file VARCHAR(64),
+		ports VARCHAR(64),
+		status VARCHAR(64),
 		created_at DATETIME default CURRENT_TIMESTAMP
 	);
 

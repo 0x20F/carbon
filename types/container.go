@@ -8,15 +8,15 @@ import (
 // Container model for our own database
 // specification of a container.
 type Container struct {
-	Id          int64    // Primary key from the database
-	DockerUid   string   // The ID that docker gives to each container
-	Uid         string   // A unique hash for the container based on the image and name
-	Name        string   // The unique container name that we generate when starting the container
-	Image       string   // The image of the container
-	ServiceName string   // The name of the service in the compose file
-	ComposeFile string   // The compose file this container belongs to
-	Ports       []string // All exposed ports
-	Status      string
+	Id          int64     // Primary key from the database
+	DockerUid   string    // The ID that docker gives to each container
+	Uid         string    // A unique hash for the container based on the image and name
+	Name        string    // The unique container name that we generate when starting the container
+	Image       string    // The image of the container
+	ServiceName string    // The name of the service in the compose file
+	ComposeFile string    // The compose file this container belongs to
+	Ports       string    // All exposed ports in a comma separated list
+	Status      string    // The current status of the container (This isn't alive within the local database, just the docker api)
 	CreatedAt   time.Time // Creation time of the container
 }
 

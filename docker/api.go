@@ -31,7 +31,7 @@ func RunningContainers() []types.Container {
 		}
 
 		c := types.Container{
-			Name:      container.Names[0],
+			Name:      container.Names[0][1:], // Remove the leading /
 			Image:     container.Image,
 			Ports:     strings.Join(ports, ", "),
 			Status:    container.Status,

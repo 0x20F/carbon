@@ -190,8 +190,11 @@ func containerize(compose types.ComposeFile) {
 		container := types.Container{
 			ServiceName: name,
 			Name:        service["container_name"].(string),
+			Image:       service["image"].(string),
+			Status:      "Created",
 			ComposeFile: compose.Path(),
 		}
+		container.Hash()
 
 		containers = append(containers, container)
 	}

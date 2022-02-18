@@ -5,8 +5,10 @@ import (
 	"co2/database"
 	"co2/docker"
 	"co2/helpers"
+	"co2/printer"
 	"co2/runner"
 	"co2/types"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -27,34 +29,28 @@ func init() {
 }
 
 func execLogs(cmd *cobra.Command, args []string) {
-	// Get all the running containers
-	containers := docker.RunningContainers()
-	saved := database.Containers()
+	matches := filterContainers(args)
+	commands := generateCommands(matches, follow)
 
-	// Find all the container IDs that the user cares about
-	var matches = []types.Container{}
-
-	for _, structure := range containers {
-		if helpers.Contains(args, structure.Uid) {
-			matches = append(matches, structure)
-			continue
-		}
-
-		// If we didn't match the ID check for the actual service name
-		for _, container := range saved {
-			if helpers.Contains(args, container.ServiceName) {
-				matches = append(matches, structure)
-				break
-			}
-		}
+	if !shouldRunLogsCommand(commands) {
+		printer.Error("ERROR", "no containers found", strings.Join(args, ", "))
+		return
 	}
 
-	// For each match we found, build the docker command
+	// Execute all the commands
+	<-runner.Execute(commands...)
+}
+
+func shouldRunLogsCommand(commands []types.Command) bool {
+	return len(commands) != 0
+}
+
+func generateCommands(matches []types.Container, follow bool) []types.Command {
 	var commands = []types.Command{}
 
-	for _, structure := range matches {
+	for _, match := range matches {
 		command := builder.DockerLogsCommand().
-			Container(structure.Name)
+			Container(match.Name)
 
 		if follow {
 			command.Follow()
@@ -62,10 +58,49 @@ func execLogs(cmd *cobra.Command, args []string) {
 
 		commands = append(commands, types.Command{
 			Text: command.Build(),
-			Name: structure.Name,
+			Name: match.Name,
 		})
 	}
 
-	// Execute all the commands
-	<-runner.Execute(commands...)
+	return commands
+}
+
+func filterContainers(choices []string) []types.Container {
+	containers := docker.RunningContainers()
+	saved := database.Containers()
+
+	var matches = []types.Container{}
+
+	// Check for Uids
+	for _, structure := range containers {
+		if helpers.Contains(choices, structure.Uid) {
+			matches = append(matches, structure)
+			continue
+		}
+	}
+
+	// Check for service names
+	for _, container := range saved {
+		if !helpers.Contains(choices, container.ServiceName) {
+			continue
+		}
+
+		matched := false
+
+		// Check if we've already matched on the Uid in the above loop
+		for _, match := range matches {
+			if match.Uid == container.Uid {
+				matched = true
+				break
+			}
+		}
+
+		if matched {
+			continue
+		}
+
+		matches = append(matches, container)
+	}
+
+	return matches
 }

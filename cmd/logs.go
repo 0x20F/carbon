@@ -32,7 +32,7 @@ func execLogs(cmd *cobra.Command, args []string) {
 	saved := database.Containers()
 
 	// Find all the container IDs that the user cares about
-	var matches = types.SortableMap{}
+	var matches = []types.Container{}
 
 	for _, structure := range containers {
 		if helpers.Contains(args, structure.Uid) {
@@ -42,7 +42,7 @@ func execLogs(cmd *cobra.Command, args []string) {
 
 		// If we didn't match the ID check for the actual service name
 		for _, container := range saved {
-			if helpers.Contains(args, container.Name) {
+			if helpers.Contains(args, container.ServiceName) {
 				matches = append(matches, structure)
 				break
 			}
@@ -54,7 +54,7 @@ func execLogs(cmd *cobra.Command, args []string) {
 
 	for _, structure := range matches {
 		command := builder.DockerLogsCommand().
-			Container(structure.Container.Names[0])
+			Container(structure.Name)
 
 		if follow {
 			command.Follow()
@@ -62,7 +62,7 @@ func execLogs(cmd *cobra.Command, args []string) {
 
 		commands = append(commands, types.Command{
 			Text: command.Build(),
-			Name: structure.Container.Names[0],
+			Name: structure.Name,
 		})
 	}
 

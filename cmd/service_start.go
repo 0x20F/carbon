@@ -48,8 +48,8 @@ func shouldRun(provided []string) bool {
 
 	// If an of the provided containers is in the database, quit
 	for _, container := range containers {
-		if helpers.Contains(provided, container.Name) {
-			printer.Error("ERROR", "service already running:", container.Name)
+		if helpers.Contains(provided, container.ServiceName) {
+			printer.Error("ERROR", "service already running:", container.ServiceName)
 			printer.Extra(
 				printer.Red,
 				"Try running `co2 stop` first",
@@ -188,8 +188,8 @@ func containerize(compose types.ComposeFile) {
 
 	for name, service := range compose.Services {
 		container := types.Container{
-			Name:        name,
-			Uid:         service["container_name"].(string),
+			ServiceName: name,
+			Name:        service["container_name"].(string),
 			ComposeFile: compose.Path(),
 		}
 

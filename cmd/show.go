@@ -70,7 +70,7 @@ func showRunning() {
 	}
 
 	sort.Slice(containers, func(i, j int) bool {
-		return containers[i].Container.Names[0] < containers[j].Container.Names[0]
+		return containers[i].Name < containers[j].Name
 	})
 
 	table := printer.NewTable(7)
@@ -86,22 +86,14 @@ func showRunning() {
 		"STATUS",
 	)
 
-	for _, structure := range containers {
-		key := structure.Uid
-		container := structure.Container
-		ports := []string{}
-
-		for _, port := range container.Ports {
-			ports = append(ports, fmt.Sprintf("%d/%s", port.PublicPort, port.Type))
-		}
-
+	for _, container := range containers {
 		table.Row(
-			key,
-			container.Names[0],
-			container.ID[:7],
+			container.Uid,
+			container.Name,
+			container.DockerUid[:10],
 			container.Image,
-			fadedStyle.Render(strings.Join(ports, ", ")), // Turn the array of ports into a string
-			fadedStyle.Render(fmt.Sprint(container.Created)),
+			fadedStyle.Render(strings.Join(container.Ports, ", ")),
+			fadedStyle.Render(fmt.Sprint(container.CreatedAt)),
 			fadedStyle.Render(container.Status),
 		)
 	}

@@ -56,16 +56,13 @@ func execShell(cmd *cobra.Command, args []string) {
 	// Get all containers
 	containers := docker.RunningContainers()
 
-	for _, structure := range containers {
-		uid := structure.Uid
-		container := structure.Container
-
-		if uid != id {
+	for _, container := range containers {
+		if container.Uid != id {
 			continue
 		}
 
 		cmd := builder.DockerShellCommand().
-			Container(container.Names[0]).
+			Container(container.Name).
 			Shell(shell).
 			Build()
 

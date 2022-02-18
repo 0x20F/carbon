@@ -16,7 +16,7 @@ func Containers() []types.Container {
 	for rows.Next() {
 		var out types.Container
 
-		err = rows.Scan(&out.Id, &out.Uid, &out.Name, &out.ComposeFile, &out.CreatedAt)
+		err = rows.Scan(&out.Id, &out.Name, &out.ServiceName, &out.ComposeFile, &out.CreatedAt)
 		handle(err)
 
 		containers = append(containers, out)
@@ -55,7 +55,7 @@ func AddContainer(container types.Container) types.Container {
 	stmt, err := db.Prepare("INSERT INTO containers(uid, name, compose_file) VALUES(?,?,?);")
 	handle(err)
 
-	res, err := stmt.Exec(container.Uid, container.Name, container.ComposeFile)
+	res, err := stmt.Exec(container.Name, container.ServiceName, container.ComposeFile)
 	handle(err)
 
 	id, err := res.LastInsertId()
@@ -92,7 +92,7 @@ func DeleteContainer(container types.Container) int64 {
 	stmt, err := db.Prepare("DELETE FROM containers WHERE uid=? AND name=?;")
 	handle(err)
 
-	res, err := stmt.Exec(container.Uid, container.Name)
+	res, err := stmt.Exec(container.Name, container.ServiceName)
 	handle(err)
 
 	affect, err := res.RowsAffected()

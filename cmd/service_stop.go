@@ -39,7 +39,7 @@ func execStop(cmd *cobra.Command, args []string) {
 
 	// Group the containers by their compose file
 	for _, container := range containers {
-		if helpers.Contains(args, container.Name) {
+		if helpers.Contains(args, container.ServiceName) {
 			grouped[container.ComposeFile] = append(grouped[container.ComposeFile], container)
 		}
 	}
@@ -57,7 +57,7 @@ func execStop(cmd *cobra.Command, args []string) {
 			Stop()
 
 		for _, container := range composeFile {
-			command.Service(container.Name)
+			command.Service(container.ServiceName)
 			database.DeleteContainer(container)
 		}
 

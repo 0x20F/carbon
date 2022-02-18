@@ -53,16 +53,11 @@ func TestContainerKeys(t *testing.T) {
 		helpers.Hash("image2/container2", 4),
 	}
 
-	found := false
-
-	for _, key := range expected {
-		if key == containers[0].Uid {
-			found = true
-			break
-		}
+	if containers[0].Uid != expected[0] {
+		t.Error("Expected", expected[0], "got", containers[0].Uid)
 	}
 
-	if !found {
-		t.Error("Expected to find", expected[0], "in the container keys")
+	if containers[1].Uid != expected[1] {
+		t.Error("Expected", expected[1], "got", containers[1].Uid)
 	}
 }

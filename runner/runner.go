@@ -52,7 +52,7 @@ func Execute(commands ...types.Command) {
 		wg.Add(1)
 
 		colored := colorize(command)
-		label := label(colored)
+		label := fmt.Sprintf(label(command.Label), colored)
 
 		go executor.Execute(&wg, command.Text, label)
 	}
@@ -72,16 +72,19 @@ func colorize(command types.Command) string {
 	style := lipgloss.NewStyle().
 		Foreground(lipgloss.Color(color))
 
-	return style.Render(command.Name)
+	return style.Render(command.Label)
 }
 
 // Cretes a label from a given string,
 // to be shown before each line of output for a specific
 // command.
+//
+// This will output a string that can be used to format with
+// Sprintf.
 func label(from string) string {
 	if from == "" {
-		return ""
+		return "%s"
 	}
 
-	return fmt.Sprintf("[ %s ]:", from)
+	return "[ %s ]: "
 }

@@ -32,15 +32,15 @@ func TestLabelGeneratesCorrectly(t *testing.T) {
 
 func TestColorizeAddsColorOfCommand(t *testing.T) {
 	command := types.Command{
-		Text: "test",
-		Name: "lmao",
+		Text:  "test",
+		Label: "lmao",
 	}
 
 	hashed := helpers.Hash(command.Text, 14)
 	commandColor := helpers.StringToColor(hashed)
 	coloredCommand := lipgloss.NewStyle().
 		Foreground(lipgloss.Color(commandColor)).
-		Render(command.Name)
+		Render(command.Label)
 
 	colored := colorize(command)
 
@@ -54,12 +54,12 @@ func TestExecuteCallsAllProvidedCommands(t *testing.T) {
 
 	commands := []types.Command{
 		{
-			Text: "test",
-			Name: "lmao",
+			Text:  "test",
+			Label: "lmao",
 		},
 		{
-			Text: "test2",
-			Name: "lmao2",
+			Text:  "test2",
+			Label: "lmao2",
 		},
 	}
 

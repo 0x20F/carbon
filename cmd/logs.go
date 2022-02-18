@@ -71,8 +71,8 @@ func generateCommands(matches []types.Container, follow bool) []types.Command {
 		}
 
 		commands = append(commands, types.Command{
-			Text: command.Build(),
-			Name: match.Name,
+			Text:  command.Build(),
+			Label: match.Name,
 		})
 	}
 

@@ -49,7 +49,7 @@ func TestShouldRunLogsCommandReturnsFalseWithNoCommands(t *testing.T) {
 func TestShouldRunLogsCommandReturnsTrueWithCommands(t *testing.T) {
 	commands := []types.Command{
 		{
-			Name: "docker",
+			Label: "docker",
 		},
 	}
 
@@ -87,7 +87,7 @@ func TestCommandLabelMatchesContainerName(t *testing.T) {
 
 	commands := generateCommands(containers, true)
 
-	if commands[0].Name != "container1" {
+	if commands[0].Label != "container1" {
 		t.Error("generateCommands should set the label to the container name")
 	}
 }

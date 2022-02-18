@@ -131,6 +131,14 @@ This one handles multiple things depending on the set flag:
 
 <br/>
 
+### `co2 logs`
+Shows the logs for one or multiple containers. Flags are as follows:
+- `-f` if provided, will not exit the command after output but will keep listening for logs.
+
+> Pro Tip: You specify the Keys you get from the [show](#co2-show) command as parameters
+
+<br/>
+
 ### `co2 shell`
 This one will build a docker command that gets you a shell into whatever container or service you specified.
 Do keep in mind, however, that since this **only returns** the composed command you still have to run it somehow.

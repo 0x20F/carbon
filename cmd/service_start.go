@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"co2/builder"
-	"co2/carbon"
 	"co2/database"
 	"co2/helpers"
 	"co2/printer"
@@ -32,13 +31,77 @@ func init() {
 	startCmd.Flags().BoolVarP(&force, "force", "f", false, help)
 }
 
+// Starts the service start command.
+// This is where all of the logging of the command happens
+// as well.
+//
+// If the force flag is provided, this will make sure to call
+// the stop command beforehand so that all the services we're
+// trying to start will start fresh.
+//
+// We also want to make sure that we tell the docker compose command
+// to run with any of the available environment files that might be
+// provided by the current store we are looking at.
+func start(cmd *cobra.Command, args []string) {
+	if ok := shouldRun(args, force); !ok {
+		return
+	}
+
+	printer.Info(
+		printer.Green,
+		"START",
+		"Starting provided services:",
+		strings.Join(args, ", "),
+	)
+
+	// If we're forcing, we want to cleanup first
+	if force {
+		printer.Extra(
+			printer.Yellow,
+			"`--force` flag is set, stopping all provided services first",
+		)
+
+		execStop(cmd, args)
+	}
+
+	extracted := extract(args)
+	envs, composeFile, err := compose(extracted)
+	if err != nil {
+		printer.Extra(printer.Grey, "Aborting")
+		return
+	}
+	containerize(composeFile)
+	run(composeFile, envs, args)
+}
+
+// Generates and runs the docker compose command based on the
+// resolved compose file, environment files, and the services
+// that the user has provided.
+func run(file types.ComposeFile, envs []string, services []string) {
+	command := builder.DockerComposeCommand().
+		File(file.Path()).
+		Service(strings.Join(services, " ")).
+		Background().
+		Up()
+
+	// Add all the environment files as well
+	for _, env := range envs {
+		command.EnvFile(env)
+	}
+
+	printer.Extra(printer.Green, "Executing `docker compose` command on the new file\n")
+	runner.Execute(types.Command{
+		Text: command.Build(),
+	})
+}
+
 // Checks whether or not the containers are already
 // in the database. If they are, we don't want to
 // start them again.
 //
 // If the force flag is provided, this will always return
 // true.
-func shouldRun(provided []string) bool {
+func shouldRun(choices []string, force bool) bool {
 	if force {
 		return true
 	}
@@ -48,7 +111,7 @@ func shouldRun(provided []string) bool {
 
 	// If an of the provided containers is in the database, quit
 	for _, container := range containers {
-		if helpers.Contains(provided, container.ServiceName) {
+		if helpers.Contains(choices, container.ServiceName) {
 			printer.Error("ERROR", "service already running:", container.ServiceName)
 			printer.Extra(
 				printer.Red,
@@ -60,32 +123,6 @@ func shouldRun(provided []string) bool {
 	}
 
 	return true
-}
-
-// Looks through all the registered stores and returns all
-// the carbon services that are defined within those stores.
-//
-// This will never to too deep into the stores when looking
-// for services since we want it to be fast. Usually a depth of 2
-// is enough.
-//
-// Each of the returned configurations will have the store
-// they belong to injected as well so they can retrieve
-// the required data if ever needed.
-func services() types.CarbonConfig {
-	stores := database.Stores()
-	configs := types.CarbonConfig{}
-
-	for _, store := range stores {
-		files := carbon.Configurations(store.Path, 2)
-
-		for k, v := range files {
-			v.Store = &store
-			configs[k] = v
-		}
-	}
-
-	return configs
 }
 
 // Looks through all the available services and returns only
@@ -102,7 +139,7 @@ func extract(args []string) types.CarbonConfig {
 	printer.Extra(printer.Green, "Looking through the store")
 
 	choices := types.CarbonConfig{}
-	configs := services()
+	configs := fs.Services()
 
 	for _, service := range args {
 		if _, ok := configs[service]; !ok {
@@ -142,9 +179,8 @@ func extract(args []string) types.CarbonConfig {
 // services, if they exist. This will make sure to inject all of
 // the required values into all the containers within the compose
 // file.
-func compose(args []string) ([]string, types.ComposeFile, error) {
+func compose(choices types.CarbonConfig) ([]string, types.ComposeFile, error) {
 	envs := []string{}
-	choices := extract(args)
 	if len(choices) == 0 {
 		return envs, types.ComposeFile{}, errors.New("no services found")
 	}
@@ -160,16 +196,13 @@ func compose(args []string) ([]string, types.ComposeFile, error) {
 	printer.Extra(printer.Green, "Saving compose file to `"+compose.Path()+"`")
 	compose.Save()
 
-	// Save all containers to the database
-	containerize(compose)
-
 	// Find all the env files that should be given to the compose file
 	for _, service := range choices {
 		if service.Store.Env == "" {
 			continue
 		}
 
-		if !helpers.Contains(envs, service.Store.Uid) {
+		if !helpers.Contains(envs, service.Store.Env) {
 			envs = append(envs, service.Store.Env)
 		}
 	}
@@ -204,62 +237,4 @@ func containerize(compose types.ComposeFile) {
 	for _, container := range containers {
 		database.AddContainer(container)
 	}
-}
-
-// Starts the service start command.
-// This is where all of the logging of the command happens
-// as well.
-//
-// If the force flag is provided, this will make sure to call
-// the stop command beforehand so that all the services we're
-// trying to start will start fresh.
-//
-// We also want to make sure that we tell the docker compose command
-// to run with any of the available environment files that might be
-// provided by the current store we are looking at.
-func start(cmd *cobra.Command, args []string) {
-	if ok := shouldRun(args); !ok {
-		return
-	}
-
-	printer.Info(
-		printer.Green,
-		"START",
-		"Starting provided services:",
-		strings.Join(args, ", "),
-	)
-
-	// If we're forcing, we want to cleanup first
-	if force {
-		printer.Extra(
-			printer.Yellow,
-			"`--force` flag is set, stopping all provided services first",
-		)
-
-		execStop(cmd, args)
-	}
-
-	// Find fresh service configurations
-	envs, file, err := compose(args)
-	if err != nil {
-		printer.Extra(printer.Grey, "Aborting")
-		return
-	}
-
-	// Execute the compose command
-	printer.Extra(printer.Green, "Executing `docker compose` command on the new file\n")
-	command := builder.DockerComposeCommand().
-		File(file.Path()).
-		Service(strings.Join(args, " ")).
-		Background().
-		Up()
-
-	// Add all the environment files as well
-	for _, env := range envs {
-		command.EnvFile(env)
-	}
-
-	runner.Execute(types.Command{
-		Text: command.Build(),
-	})
 }

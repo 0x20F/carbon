@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"co2/types"
 	"io/ioutil"
+	"reflect"
 
 	"gopkg.in/yaml.v2"
 )
@@ -60,8 +61,7 @@ func findCarbonFiles(root string, depth int) []string {
 func Configurations(path string, depth int) types.CarbonConfig {
 	files := findCarbonFiles(path, depth)
 
-	var config types.CarbonConfig = make(types.CarbonConfig)           // Abstraction for the fields we actually care about in a service definition
-	var values types.ServiceDefinition = make(types.ServiceDefinition) // Abstraction so we just get an accessible map of all the fields for later
+	var config types.CarbonConfig = make(types.CarbonConfig, len(files))
 
 	for _, file := range files {
 		content, err := ioutil.ReadFile(file)
@@ -69,48 +69,73 @@ func Configurations(path string, depth int) types.CarbonConfig {
 			panic(err)
 		}
 
-		// Split at yaml document separator
-		documents := bytes.Split(content, []byte("---"))
+		documents := documents(content, file)
 
-		for _, doc := range documents {
-			temp := types.CarbonConfig{}
-
-			// Unmarshal once into a structure with limited fields
-			err := yaml.Unmarshal(doc, &temp)
-			if err != nil {
-				panic(err)
-			}
-
-			// Unmarshal again into an arbitrary map with all the available fields
-			err = yaml.Unmarshal(doc, &values)
-			if err != nil {
-				panic(err)
-			}
-
-			// Inject the path into the config
-			for k, v := range temp {
-				v.Path = file
-				config[k] = v
-			}
+		for k, v := range documents {
+			config[k] = v
 		}
 	}
 
-	// Map all the arbitrary maps into the CarbonYaml structures
-	// for later use.
-	count := 0
-	for key := range config {
-		actual := config[key]
-		arbitrary := values[key]
+	return config
+}
 
-		// Properly instantiate all the important fields
-		actual.Name = key
-		actual.FullContents = make(types.ServiceFields)
-		actual.FullContents = arbitrary
+// Separates the given file contents at the yaml document
+// separator and parses all the found documents according to
+// the carbon requirements.
+//
+// Each service will be parsed into a CarbonConfig, and then into
+// an arbitrary map that contains all the fields of the defined configuration.
+// This arbitrary map will then be mapped into a full CarbonConfig so that
+// each service has access to all of the contents within their service definition
+// if they ever need it.
+func documents(contents []byte, file string) types.CarbonConfig {
+	documents := bytes.Split(contents, []byte("---"))
 
-		// Update with the finalized structure
-		config[key] = actual
-		count++
+	var final types.CarbonConfig = make(types.CarbonConfig)
+
+	for _, doc := range documents {
+		full := types.CarbonConfig{}
+		fake := types.ServiceDefinition{}
+
+		// Unmarshal once into a structure with limited fields
+		err := yaml.Unmarshal(doc, &full)
+		if err != nil {
+			panic(err)
+		}
+
+		// Unmarshal again into an arbitrary map with all the available fields
+		err = yaml.Unmarshal(doc, &fake)
+		if err != nil {
+			panic(err)
+		}
+
+		// Map the values from the fake map into the real map
+		k, v := move(fake, full, file)
+		final[k] = v
 	}
 
-	return config
+	return final
+}
+
+// Maps the required fields from the arbitrary map with no specific structure
+// into the real CarbonConfig map with the correct structure.
+//
+// This makes sure that the final service representation knows the path
+// it came from, the name of the service it represents, and has access
+// to all of the contents within their service definition if they ever
+// need it.
+//
+// This has to exist since we're not building a 1:1 mapping between a
+// docker-compose service definition but we still want all the data.
+func move(this types.ServiceDefinition, into types.CarbonConfig, file string) (string, types.CarbonService) {
+	// Get all the key from the map even though we know there's only 1
+	key := reflect.ValueOf(into).MapKeys()[0].String()
+	current := into[key]
+
+	current.Path = file
+	current.Name = key
+	current.FullContents = make(types.ServiceFields)
+	current.FullContents = this[key]
+
+	return key, current
 }

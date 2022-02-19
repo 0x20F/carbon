@@ -30,8 +30,10 @@ func RunningContainers() []types.Container {
 			ports = append(ports, fmt.Sprintf("%d/%s", port.PublicPort, port.Type))
 		}
 
+		name := strings.TrimPrefix(container.Names[0], "/")
+
 		c := types.Container{
-			Name:      container.Names[0][1:], // Remove the leading /
+			Name:      name,
 			Image:     container.Image,
 			Ports:     strings.Join(ports, ", "),
 			Status:    container.Status,

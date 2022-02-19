@@ -34,24 +34,42 @@ func execStop(cmd *cobra.Command, args []string) {
 		strings.Join(args, ", "),
 	)
 
-	containers := database.Containers()
-	grouped := map[string][]types.Container{}
+	groups := groupByComposeFile(args...)
 
-	// Group the containers by their compose file
-	for _, container := range containers {
-		if helpers.Contains(args, container.ServiceName) || helpers.Contains(args, container.Uid) {
-			grouped[container.ComposeFile] = append(grouped[container.ComposeFile], container)
-		}
-	}
-
-	if len(grouped) == 0 {
+	if len(groups) == 0 {
 		printer.Extra(printer.Cyan, "None of the provided services are running", "Ignoring")
 		return
 	}
 
-	// Stop all the containers in each group and
-	// delete them from the database
-	for path, composeFile := range grouped {
+	stopContainers(groups)
+}
+
+// Groups all the carbon service IDs or names that the
+// user has provided by their respective compose files.
+// Returns a map of compose file paths to a list of containers
+// that should be stopped in that compose file.
+func groupByComposeFile(choices ...string) map[string][]types.Container {
+	containers := database.Containers()
+	groups := make(map[string][]types.Container)
+
+	for _, container := range containers {
+		if helpers.Contains(choices, container.ServiceName) ||
+			helpers.Contains(choices, container.Uid) {
+
+			groups[container.ComposeFile] = append(groups[container.ComposeFile], container)
+		}
+	}
+
+	return groups
+}
+
+// Builds a new docker compose stop command for each provided
+// compose file container group and then runs them all in parallel after
+// deleting all the containers from the database.
+func stopContainers(groups map[string][]types.Container) {
+	commands := []types.Command{}
+
+	for _, composeFile := range groups {
 		command := builder.DockerComposeCommand().
 			File(composeFile[0].ComposeFile).
 			Stop()
@@ -61,11 +79,11 @@ func execStop(cmd *cobra.Command, args []string) {
 			database.DeleteContainer(container)
 		}
 
-		// Run the command even if the database hasn't fully
-		// updated yet. It's independent.
-		printer.Extra(printer.Green, "Executing stop command for compose file: "+path)
-		runner.Execute(types.Command{
+		commands = append(commands, types.Command{
 			Text: command.Build(),
 		})
 	}
+
+	printer.Extra(printer.Green, "Executing stop commands")
+	runner.Execute(commands...)
 }

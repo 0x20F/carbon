@@ -7,6 +7,8 @@ import (
 )
 
 func TestTableApi(t *testing.T) {
+	beforePrinterTest()
+
 	table := NewTable(3)
 
 	table.Header("Header 1", "Header 2", "Header 3")
@@ -39,5 +41,17 @@ func TestStringAnsiCleanup(t *testing.T) {
 
 	if clean == len(str) || clean != 4 {
 		t.Error("Expected clean len", 4, "got", clean)
+	}
+}
+
+func TestRowCountIsCorrect(t *testing.T) {
+	table := NewTable(1)
+
+	table.Row("Row 1")
+	table.Row("Row 2")
+	table.Row("Row 3")
+
+	if len(table.Rows()) != 3 {
+		t.Error("Expected 3 rows but got", len(table.Rows()))
 	}
 }

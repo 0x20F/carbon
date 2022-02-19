@@ -25,8 +25,6 @@ func init() {}
 // and removes all the ones that are registered
 // with the UIDs provided by the user.
 func execRemove(cmd *cobra.Command, args []string) {
-	stores := database.Stores()
-
 	printer.Info(
 		printer.Green,
 		"REMOVE",
@@ -34,8 +32,14 @@ func execRemove(cmd *cobra.Command, args []string) {
 		strings.Join(args, ", "),
 	)
 
+	removeByUid(args...)
+}
+
+func removeByUid(chosen ...string) {
+	stores := database.Stores()
+
 	for _, store := range stores {
-		if helpers.Contains(args, store.Uid) {
+		if helpers.Contains(chosen, store.Uid) {
 			database.DeleteStore(store)
 			printer.Extra(printer.Green, "Removed store: "+store.Uid)
 		}

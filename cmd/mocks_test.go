@@ -4,7 +4,9 @@ import (
 	"co2/database"
 	"co2/docker"
 	"co2/helpers"
+	"co2/runner"
 	"co2/types"
+	"sync"
 
 	"github.com/4khara/replica"
 	dockerTypes "github.com/docker/docker/api/types"
@@ -62,13 +64,30 @@ func (f MockFs) Services() types.CarbonConfig {
 	return nil
 }
 
+type MockExecutor struct{}
+
+func (e *MockExecutor) Execute(done *sync.WaitGroup, command string, label string) {
+	replica.MockFn(done, command, label)
+
+	done.Done()
+}
+
 func beforeCmdTest() {
 	WrapFs(MockFs{})
+
+	runner.CustomExecutor(&MockExecutor{})
 	docker.CustomWrapper(&MockWrapperCmd{})
+
 	replica.Mocks.Clear()
+
+	cleanup()
 }
 
 func afterCmdTest() {
+	cleanup()
+}
+
+func cleanup() {
 	// Cleanup the database
 	for _, store := range database.Stores() {
 		database.DeleteStore(store)

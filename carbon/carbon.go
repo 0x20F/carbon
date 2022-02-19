@@ -61,7 +61,7 @@ func findCarbonFiles(root string, depth int) []string {
 func Configurations(path string, depth int) types.CarbonConfig {
 	files := findCarbonFiles(path, depth)
 
-	var config types.CarbonConfig = make(types.CarbonConfig) // Abstraction for the fields we actually care about in a service definition
+	var config types.CarbonConfig = make(types.CarbonConfig, len(files))
 
 	for _, file := range files {
 		content, err := ioutil.ReadFile(file)

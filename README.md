@@ -177,7 +177,7 @@ $ co2 store remove unique-store
 
 <br/>
 
-### 📦 `co2 service start`
+### 📦 `co2 start`
 Looks through all the registered stores (see [add](#%F0%9F%93%A6-co2-store-add) on how to register stores) and starts all of the provided services
 if they're found. 
 
@@ -195,7 +195,7 @@ If some of the provided services are already running but you'd like to stop them
 
 <br/>
 
-### 📦 `co2 service stop`
+### 📦 `co2 stop`
 Looks through the currently running **carbon** services and stops the provided ones.
 
 Example:

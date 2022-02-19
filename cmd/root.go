@@ -20,7 +20,9 @@ func Execute() error {
 
 // Registers all subcommands
 func init() {
-	rootCmd.AddCommand(serviceCmd)
+	rootCmd.AddCommand(startCmd)
+	rootCmd.AddCommand(stopCmd)
+
 	rootCmd.AddCommand(showCmd)
 	rootCmd.AddCommand(storeCmd)
 	rootCmd.AddCommand(shellCmd)

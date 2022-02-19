@@ -16,12 +16,12 @@ builds:
         goarch: arm64
       - goos: windows
         goarch: arm
+      - goarch: 386
 archives:
   - replacements:
       darwin: Darwin
       linux: Linux
       windows: Windows
-      386: i386
       amd64: x86_64
 checksum:
   name_template: 'checksums.txt'
@@ -52,7 +52,6 @@ nfpms:
       darwin: Darwin
       linux: Linux
       windows: Windows
-      386: i386
       amd64: x86_64
     homepage: https://github.com/0x20F/carbon
     maintainer: 0x20F <0x20fa@gmail.com>

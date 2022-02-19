@@ -41,3 +41,15 @@ func TestStringAnsiCleanup(t *testing.T) {
 		t.Error("Expected clean len", 4, "got", clean)
 	}
 }
+
+func TestRowCountIsCorrect(t *testing.T) {
+	table := NewTable(1)
+
+	table.Row("Row 1")
+	table.Row("Row 2")
+	table.Row("Row 3")
+
+	if len(table.Rows()) != 3 {
+		t.Error("Expected 3 rows but got", len(table.Rows()))
+	}
+}

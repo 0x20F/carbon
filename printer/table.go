@@ -26,10 +26,10 @@ type Table struct {
 // Creates a new table with the given column count.
 // This needs to be defined since other internal measurements
 // depend on it.
-func NewTable(columnCount int) *Table {
+func NewTable(columnCount int) Table {
 	columns := make([][]string, columnCount)
 
-	table := &Table{
+	table := Table{
 		ColumnCount: columnCount,
 		Paddings:    make([]int, columnCount),
 		Columns:     columns,
@@ -59,7 +59,20 @@ func (t *Table) Row(data ...string) {
 // so all columns are equal as well as align everything that needs
 // alignment.
 func (t *Table) Display() {
+	for _, row := range t.Rows() {
+		fmt.Println(row)
+	}
+}
+
+// Generates all the rows as neatly formatted strings so they
+// can be either printed using the Display() method or
+// messed with in any other way.
+//
+// Use this if you want to have a custom display of things somehow.
+// Or if you want to test that everything is working as it should.
+func (t *Table) Rows() []string {
 	rowCount := len(t.Columns[0])
+	rows := []string{}
 
 	for i := 0; i < rowCount; i++ {
 		current := make([]string, t.ColumnCount)
@@ -70,8 +83,10 @@ func (t *Table) Display() {
 			current = append(current, formatted)
 		}
 
-		fmt.Println(strings.Join(current, ""))
+		rows = append(rows, strings.Join(current, ""))
 	}
+
+	return rows
 }
 
 // Adds a new row to the table and updates

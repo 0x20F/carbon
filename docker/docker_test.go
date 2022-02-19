@@ -12,7 +12,17 @@ import (
 type MockWrapper struct{}
 
 func (w *MockWrapper) RunningContainers() []dockerTypes.Container {
-	replica.MockFn()
+	_, rv := replica.MockFn()
+
+	if rv != nil {
+		var containers []dockerTypes.Container
+
+		if rv[0] != nil {
+			containers = rv[0].([]dockerTypes.Container)
+		}
+
+		return containers
+	}
 
 	return []dockerTypes.Container{
 		{
@@ -30,6 +40,7 @@ func (w *MockWrapper) RunningContainers() []dockerTypes.Container {
 
 func before() {
 	CustomWrapper(&MockWrapper{})
+	replica.Mocks.Clear()
 }
 
 func TestRunningContainers(t *testing.T) {
@@ -54,6 +65,26 @@ func TestApiWrapperRemovesContainerNameSlash(t *testing.T) {
 		if strings.HasPrefix(container.Name, "/") {
 			t.Error("Expected container name to not start with a slash")
 		}
+	}
+}
+
+func TestApiWrapperDoesntRemoveFirstContainerNameCharacterIfNoSlash(t *testing.T) {
+	before()
+
+	// Mock the return value to return one without slash
+	replica.Mocks.SetReturnValues("RunningContainers", []dockerTypes.Container{
+		{
+			ID:    "1",
+			Image: "image1",
+			Names: []string{"agent1337"},
+		},
+	})
+
+	containers := RunningContainers()
+
+	// Make sure the container name isn't missing the first character
+	if containers[0].Name != "agent1337" {
+		t.Errorf("Expected container name to be whole even if docker didn't send back one with a slash, got %s", containers[0].Name)
 	}
 }
 

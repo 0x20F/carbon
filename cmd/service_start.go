@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"co2/builder"
-	"co2/carbon"
 	"co2/database"
 	"co2/helpers"
 	"co2/printer"
@@ -62,32 +61,6 @@ func shouldRun(provided []string) bool {
 	return true
 }
 
-// Looks through all the registered stores and returns all
-// the carbon services that are defined within those stores.
-//
-// This will never to too deep into the stores when looking
-// for services since we want it to be fast. Usually a depth of 2
-// is enough.
-//
-// Each of the returned configurations will have the store
-// they belong to injected as well so they can retrieve
-// the required data if ever needed.
-func services() types.CarbonConfig {
-	stores := database.Stores()
-	configs := types.CarbonConfig{}
-
-	for _, store := range stores {
-		files := carbon.Configurations(store.Path, 2)
-
-		for k, v := range files {
-			v.Store = &store
-			configs[k] = v
-		}
-	}
-
-	return configs
-}
-
 // Looks through all the available services and returns only
 // the ones that the user has specified in the command.
 //
@@ -102,7 +75,7 @@ func extract(args []string) types.CarbonConfig {
 	printer.Extra(printer.Green, "Looking through the store")
 
 	choices := types.CarbonConfig{}
-	configs := services()
+	configs := fs.Services()
 
 	for _, service := range args {
 		if _, ok := configs[service]; !ok {

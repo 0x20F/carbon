@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"co2/database"
 	"co2/docker"
 	"co2/helpers"
+	"co2/types"
 
 	"github.com/4khara/replica"
 	dockerTypes "github.com/docker/docker/api/types"
@@ -42,7 +44,37 @@ func (w *MockWrapperCmd) RunningContainers() []dockerTypes.Container {
 	}
 }
 
+type MockFs struct{}
+
+func (f MockFs) Services() types.CarbonConfig {
+	_, rv := replica.MockFn()
+
+	if rv != nil {
+		var carbonConfig types.CarbonConfig
+
+		if rv[0] != nil {
+			carbonConfig = rv[0].(types.CarbonConfig)
+		}
+
+		return carbonConfig
+	}
+
+	return nil
+}
+
 func beforeCmdTest() {
+	WrapFs(MockFs{})
 	docker.CustomWrapper(&MockWrapperCmd{})
 	replica.Mocks.Clear()
+}
+
+func afterCmdTest() {
+	// Cleanup the database
+	for _, store := range database.Stores() {
+		database.DeleteStore(store)
+	}
+
+	for _, container := range database.Containers() {
+		database.DeleteContainer(container)
+	}
 }

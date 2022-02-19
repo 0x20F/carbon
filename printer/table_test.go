@@ -7,6 +7,8 @@ import (
 )
 
 func TestTableApi(t *testing.T) {
+	beforePrinterTest()
+
 	table := NewTable(3)
 
 	table.Header("Header 1", "Header 2", "Header 3")

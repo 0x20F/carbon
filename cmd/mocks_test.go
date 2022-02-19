@@ -4,6 +4,7 @@ import (
 	"co2/database"
 	"co2/docker"
 	"co2/helpers"
+	"co2/printer"
 	"co2/runner"
 	"co2/types"
 	"sync"
@@ -72,9 +73,16 @@ func (e *MockExecutor) Execute(done *sync.WaitGroup, command string, label strin
 	done.Done()
 }
 
+type MockPrinter struct{}
+
+func (e *MockPrinter) Ln(a ...interface{}) {
+	replica.MockFn(a...)
+}
+
 func beforeCmdTest() {
 	WrapFs(MockFs{})
 
+	printer.WrapStdout(&MockPrinter{})
 	runner.CustomExecutor(&MockExecutor{})
 	docker.CustomWrapper(&MockWrapperCmd{})
 

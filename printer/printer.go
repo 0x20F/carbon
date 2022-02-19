@@ -58,7 +58,7 @@ var (
 func Info(color Color, title string, info string, highlight string) {
 	headerStyle.Background(lipgloss.Color(color))
 
-	fmt.Println(
+	out.Ln(
 		headerStyle.Render(fmt.Sprintf(" %s ", title)),
 		infoStyle.Render(info),
 		highlightStyle.Render(highlight),
@@ -101,12 +101,17 @@ func Extra(color Color, info ...string) {
 		)
 	}
 
-	fmt.Println(
+	out.Ln(
 		"  ",
 		strings.Join(rendered, "\n   "),
 	)
 }
 
+// Generates the styling for the text that should be printed
+// but returns it instead of sending it to stdout.
+//
+// This allows you to fully generate styled errors and
+// return them to be printed somewhere else if needed.
 func Render(color Color, title, info, highlight string) string {
 	headerStyle.Background(lipgloss.Color(color))
 

@@ -60,7 +60,7 @@ func (t *Table) Row(data ...string) {
 // alignment.
 func (t *Table) Display() {
 	for _, row := range t.Rows() {
-		fmt.Println(row)
+		out.Ln(row)
 	}
 }
 

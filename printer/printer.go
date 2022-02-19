@@ -106,3 +106,14 @@ func Extra(color Color, info ...string) {
 		strings.Join(rendered, "\n   "),
 	)
 }
+
+func Render(color Color, title, info, highlight string) string {
+	headerStyle.Background(lipgloss.Color(color))
+
+	return fmt.Sprintf(
+		"%s %s %s",
+		headerStyle.Render(fmt.Sprintf(" %s ", title)),
+		infoStyle.Render(info),
+		highlightStyle.Render(highlight),
+	)
+}

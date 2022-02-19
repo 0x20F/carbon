@@ -5,47 +5,16 @@ import (
 	"co2/docker"
 	"co2/types"
 	"testing"
-
-	"github.com/4khara/replica"
-	dockerTypes "github.com/docker/docker/api/types"
 )
 
-type MockWrapperShell struct{}
-
-func (w *MockWrapperShell) RunningContainers() []dockerTypes.Container {
-	replica.MockFn()
-
-	return []dockerTypes.Container{
-		{
-			ID:    "1",
-			Image: "image1",
-			Names: []string{"/docker-container1"},
-		},
-		{
-			ID:    "2",
-			Image: "image2",
-			Names: []string{"/docker-container2"},
-		},
-		{
-			ID:    "3",
-			Image: "image3",
-			Names: []string{"/docker-container3"},
-		},
-	}
-}
-
-func beforeShellTest() {
-	docker.CustomWrapper(&MockWrapperShell{})
-}
-
 func TestGenerateCommandFindsByUid(t *testing.T) {
-	beforeShellTest()
+	beforeCmdTest()
 
 	// Get all the generated containers first so we can get the uid
 	container := docker.RunningContainers()[0]
 
 	// Generate the command with the Uid
-	command := generateCommand(container.Uid, "bash")
+	command := generateShellCommand(container.Uid, "bash")
 
 	if command == "" {
 		t.Error("generateCommand should return a command when given a Uid")
@@ -53,13 +22,13 @@ func TestGenerateCommandFindsByUid(t *testing.T) {
 }
 
 func TestGenerateCommandFindsByName(t *testing.T) {
-	beforeShellTest()
+	beforeCmdTest()
 
 	// Get all the generated containers first so we can get the name
 	container := docker.RunningContainers()[0]
 
 	// Generate the command with the name
-	command := generateCommand(container.Name, "bash")
+	command := generateShellCommand(container.Name, "bash")
 
 	if command == "" {
 		t.Error("generateCommand should return a command when given a name")
@@ -67,7 +36,7 @@ func TestGenerateCommandFindsByName(t *testing.T) {
 }
 
 func TestGenerateCommandFindsByServiceName(t *testing.T) {
-	beforeShellTest()
+	beforeCmdTest()
 
 	// Add some containers to the database
 	containers := []types.Container{
@@ -90,7 +59,7 @@ func TestGenerateCommandFindsByServiceName(t *testing.T) {
 	}
 
 	// Generate the command with the service name
-	command := generateCommand("service1", "bash")
+	command := generateShellCommand("service1", "bash")
 
 	if command == "" {
 		t.Error("generateCommand should return a command when given a service name")
@@ -98,10 +67,10 @@ func TestGenerateCommandFindsByServiceName(t *testing.T) {
 }
 
 func TestGenerateCommandReturnsEmptyWhenContainerNotFound(t *testing.T) {
-	beforeShellTest()
+	beforeCmdTest()
 
 	// Generate the command with the service name
-	command := generateCommand("non-existent-lol", "bash")
+	command := generateShellCommand("non-existent-lol", "bash")
 
 	if command != "" {
 		t.Error("generateCommand should return an empty string when the container is not found")
@@ -109,7 +78,7 @@ func TestGenerateCommandReturnsEmptyWhenContainerNotFound(t *testing.T) {
 }
 
 func TestByCarbonFindsByServiceName(t *testing.T) {
-	beforeShellTest()
+	beforeCmdTest()
 
 	// Add some containers to the database
 	containers := []types.Container{
@@ -140,7 +109,7 @@ func TestByCarbonFindsByServiceName(t *testing.T) {
 }
 
 func TestByDockerFindsByUid(t *testing.T) {
-	beforeShellTest()
+	beforeCmdTest()
 
 	// Get all the generated containers first so we can get the uid
 	container := docker.RunningContainers()[0]
@@ -154,7 +123,7 @@ func TestByDockerFindsByUid(t *testing.T) {
 }
 
 func TestByDockerFindsByName(t *testing.T) {
-	beforeShellTest()
+	beforeCmdTest()
 
 	// Get all the generated containers first so we can get the name
 	container := docker.RunningContainers()[0]

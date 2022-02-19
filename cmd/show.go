@@ -40,7 +40,12 @@ func init() {
 // the specific table representing each flag.
 func execShow(cmd *cobra.Command, args []string) {
 	if running {
-		showRunning()
+		res, err := showRunning()
+		if err != "" {
+			fmt.Println(err)
+		} else {
+			res.Display()
+		}
 	}
 
 	if stores {
@@ -52,7 +57,7 @@ func execShow(cmd *cobra.Command, args []string) {
 	}
 }
 
-// Shows all the running containers.
+// Generates a table of all the running containers.
 //
 // Since this runs using the docker api, it's completely
 // independent of any carbon features, or even the
@@ -60,19 +65,19 @@ func execShow(cmd *cobra.Command, args []string) {
 //
 // The resulting table should also contain the unique
 // id for the container generated from the name and the image.
-func showRunning() {
+func showRunning() (printer.Table, string) {
+	var table printer.Table
 	containers := docker.RunningContainers()
 
 	if len(containers) == 0 {
-		printer.Info(printer.Cyan, "RUN", "No running containers", "")
-		return
+		return table, printer.Render(printer.Cyan, "RUN", "No running containers", "")
 	}
 
 	sort.Slice(containers, func(i, j int) bool {
 		return containers[i].Name < containers[j].Name
 	})
 
-	table := printer.NewTable(7)
+	table = printer.NewTable(7)
 	printer.Info(printer.Cyan, "RUN", "total running containers:", fmt.Sprint(len(containers)))
 
 	table.Header(
@@ -97,7 +102,7 @@ func showRunning() {
 		)
 	}
 
-	table.Display()
+	return table, ""
 }
 
 // Shows all the registered carbon stores.

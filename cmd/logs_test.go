@@ -5,38 +5,7 @@ import (
 	"co2/docker"
 	"co2/types"
 	"testing"
-
-	"github.com/4khara/replica"
-	dockerTypes "github.com/docker/docker/api/types"
 )
-
-type MockWrapperLogs struct{}
-
-func (w *MockWrapperLogs) RunningContainers() []dockerTypes.Container {
-	replica.MockFn()
-
-	return []dockerTypes.Container{
-		{
-			ID:    "1",
-			Image: "image1",
-			Names: []string{"/docker-container1"},
-		},
-		{
-			ID:    "2",
-			Image: "image2",
-			Names: []string{"/docker-container2"},
-		},
-		{
-			ID:    "3",
-			Image: "image3",
-			Names: []string{"/docker-container3"},
-		},
-	}
-}
-
-func beforeLogTest() {
-	docker.CustomWrapper(&MockWrapperLogs{})
-}
 
 func TestShouldRunLogsCommandReturnsFalseWithNoCommands(t *testing.T) {
 	commands := []types.Command{}
@@ -93,7 +62,7 @@ func TestCommandLabelMatchesContainerName(t *testing.T) {
 }
 
 func TestContainersFilterFindsByUid(t *testing.T) {
-	beforeLogTest()
+	beforeCmdTest()
 
 	// Get the containers that docker will return so we can get the hashes
 	dockerContainers := docker.RunningContainers()
@@ -108,7 +77,7 @@ func TestContainersFilterFindsByUid(t *testing.T) {
 }
 
 func TestContainersFilterFindsByCarbonServiceName(t *testing.T) {
-	beforeLogTest()
+	beforeCmdTest()
 
 	containers := []types.Container{
 		{
@@ -134,7 +103,7 @@ func TestContainersFilterFindsByCarbonServiceName(t *testing.T) {
 }
 
 func TestContainersMatchesBothUidAndServiceName(t *testing.T) {
-	beforeLogTest()
+	beforeCmdTest()
 
 	containers := []types.Container{
 		{

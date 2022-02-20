@@ -119,18 +119,19 @@ func validateId(from string, store string) string {
 //
 // This does not allow for duplicate stores with the same uid.
 func addStore(uid, path, environment string) {
-	printer.Info(printer.Green, "ADD", "Adding store", store)
-	env := ""
+	expandedStore := helpers.ExpandPath(path)
+	expandedEnv := ""
 
-	if env != "" {
-		env = helpers.ExpandPath(environment)
+	if environment != "" {
+		expandedEnv = helpers.ExpandPath(environment)
 	}
-	store = helpers.ExpandPath(store)
+
+	printer.Info(printer.Green, "ADD", "Adding store", expandedStore)
 
 	store := types.Store{
 		Uid:  id,
-		Path: store,
-		Env:  env,
+		Path: expandedStore,
+		Env:  expandedEnv,
 	}
 
 	database.DeleteStore(store)

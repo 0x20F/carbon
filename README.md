@@ -1,6 +1,8 @@
 <h1><img alt="banner" src="./.github/images/carbon.png" width="300"/></h1>
 <p>beast of a wrapper</p>
 
+<a href="https://asciinema.org/a/470501?speed=2"><img src="./.github/images/example-usage.png" width="836"/></a>
+
 <br/>
 
 #### Fast Travel:
